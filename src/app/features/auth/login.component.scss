@@ -124,6 +124,19 @@ button[type="submit"] { width: 100%; justify-content: center; margin-top: 0.5rem
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+  &--centered {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+
+    .btn-wake { max-width: 280px; }
+    .demo-hint { text-align: center; }
+  }
 }
 
 .demo-divider {
