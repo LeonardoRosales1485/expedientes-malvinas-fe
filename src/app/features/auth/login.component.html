@@ -44,19 +44,34 @@
 
       <p class="register-link">¿Es vecino? <a routerLink="/registro-ciudadano">Registrarse como ciudadano</a></p>
 
-      @if (showDemoLogin && demoUsers.length > 0) {
+      @if (showDemoLogin) {
         <div class="demo-access">
           <p class="demo-divider">Acceso rápido (desarrollo)</p>
-          <label class="demo-label">
-            Usuario demo
-            <select (change)="onDemoSelect($any($event.target).value)">
-              <option value="">— Seleccionar usuario —</option>
-              @for (u of demoUsers; track u.email) {
-                <option [value]="u.email">{{ u.label }}</option>
-              }
-            </select>
-          </label>
-          <p class="demo-hint">Contraseña demo: {{ environment.demoPassword || 'demo123' }}</p>
+
+          @if (checkingServer) {
+            <button type="button" class="btn-wake" disabled>Verificando servidor…</button>
+          } @else if (demoUsers.length > 0) {
+            <label class="demo-label">
+              Usuario demo
+              <select (change)="onDemoSelect($any($event.target).value)">
+                <option value="">— Seleccionar usuario —</option>
+                @for (u of demoUsers; track u.email) {
+                  <option [value]="u.email">{{ u.label }}</option>
+                }
+              </select>
+            </label>
+            <p class="demo-hint">Contraseña demo: {{ environment.demoPassword || 'demo123' }}</p>
+          } @else if (serverWaking) {
+            <button type="button" class="btn-wake" disabled>
+              Iniciando servidor… {{ wakeCountdown }}s
+            </button>
+            <p class="demo-hint">El servidor tarda ~30 s en despertar.</p>
+          } @else {
+            <button type="button" class="btn-wake" (click)="wakeServer()">
+              ⚡ Pre-iniciar servidor
+            </button>
+            <p class="demo-hint">Necesario solo en el primer acceso del día.</p>
+          }
         </div>
       }
     </div>

@@ -159,6 +159,30 @@ button[type="submit"] { width: 100%; justify-content: center; margin-top: 0.5rem
   text-align: center;
 }
 
+.btn-wake {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 /* ===== Mobile: stack vertically ===== */
 @media (max-width: 700px) {
   .login-page {

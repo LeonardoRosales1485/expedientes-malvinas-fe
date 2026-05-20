@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -24,6 +24,14 @@ export class LoginComponent implements OnInit {
   readonly showDemoLogin = environment.enableDemoLogin;
   readonly environment = environment;
 
+  /** true durante los primeros 2s mientras se espera respuesta del servidor */
+  checkingServer = true;
+  /** true mientras corre el contador de 40s de warm-up */
+  serverWaking = false;
+  wakeCountdown = 40;
+  private wakeInterval: ReturnType<typeof setInterval> | null = null;
+  private checkTimeout: ReturnType<typeof setTimeout> | null = null;
+
   form = this.fb.nonNullable.group({
     email: ['admin@blueopendata.com', [Validators.required, Validators.email]],
     password: ['admin123', Validators.required],
@@ -32,9 +40,64 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     if (this.showDemoLogin) {
       this.auth.listDemoUsers().subscribe({
-        next: (users) => (this.demoUsers = users),
-        error: () => (this.demoUsers = []),
+        next: (users) => {
+          this.demoUsers = users;
+          this.checkingServer = false;
+          // Si el servidor respondió mientras corría el warm-up, cancelarlo
+          if (this.serverWaking) {
+            this.stopWaking();
+          }
+        },
+        error: () => {
+          this.demoUsers = [];
+          this.checkingServer = false;
+        },
       });
+
+      // Desbloquear la UI después de 2s independientemente de si la API respondió
+      this.checkTimeout = setTimeout(() => (this.checkingServer = false), 2000);
+    } else {
+      this.checkingServer = false;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.wakeInterval) clearInterval(this.wakeInterval);
+    if (this.checkTimeout) clearTimeout(this.checkTimeout);
+  }
+
+  wakeServer(): void {
+    this.serverWaking = true;
+    this.wakeCountdown = 40;
+
+    // Lanzar petición para despertar Render
+    this.auth.listDemoUsers().subscribe({
+      next: (users) => {
+        this.demoUsers = users;
+        this.stopWaking();
+      },
+      error: () => {},
+    });
+
+    // Contador regresivo de 40 segundos
+    this.wakeInterval = setInterval(() => {
+      this.wakeCountdown--;
+      if (this.wakeCountdown <= 0) {
+        this.stopWaking();
+        // Último intento al finalizar el contador
+        this.auth.listDemoUsers().subscribe({
+          next: (users) => (this.demoUsers = users),
+          error: () => {},
+        });
+      }
+    }, 1000);
+  }
+
+  private stopWaking(): void {
+    this.serverWaking = false;
+    if (this.wakeInterval) {
+      clearInterval(this.wakeInterval);
+      this.wakeInterval = null;
     }
   }
 
