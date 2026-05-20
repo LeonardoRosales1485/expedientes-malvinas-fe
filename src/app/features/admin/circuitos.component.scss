@@ -21,6 +21,7 @@
 }
 
 .toolbar { margin-bottom: 1rem; }
+.toolbar-row { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .wf-card { margin-bottom: 1rem; }
 .wf-head { display: flex; justify-content: space-between; align-items: center; }
 .meta { color: #666; font-size: 0.9rem; }

@@ -40,9 +40,10 @@ export class LoginComponent implements OnInit {
 
   onDemoSelect(email: string): void {
     if (!email) return;
+    const isAdmin = email === 'admin@blueopendata.com';
     this.form.patchValue({
       email,
-      password: environment.demoPassword || 'demo123',
+      password: isAdmin ? 'admin123' : (environment.demoPassword || 'demo123'),
     });
   }
 

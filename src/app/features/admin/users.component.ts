@@ -23,6 +23,19 @@ export class UsersComponent implements OnInit {
   error = '';
   allRoles = ALL_ROLES;
   roleLabel = roleLabel;
+  searchText = '';
+
+  get filteredUsers(): UserAdmin[] {
+    const q = this.searchText.toLowerCase().trim();
+    if (!q) return this.users;
+    return this.users.filter(
+      (u) =>
+        u.email.toLowerCase().includes(q) ||
+        u.nombre.toLowerCase().includes(q) ||
+        (u.apellido ?? '').toLowerCase().includes(q) ||
+        this.repNombres(u.reparticionesIds).toLowerCase().includes(q),
+    );
+  }
 
   ngOnInit(): void {
     this.load();

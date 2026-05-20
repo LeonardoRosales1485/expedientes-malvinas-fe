@@ -70,7 +70,7 @@
         @if (activeTab === 'historial') {
           <h2 class="hs-heading">
             Historial de pasos
-            <span class="step-counter">({{ pasosCompletados() }} de {{ expediente.historialSteps.length }} completos)</span>
+            <span class="step-counter">({{ pasosCompletados() }} de {{ totalPasosCircuito }} completos)</span>
           </h2>
           <ol class="hs-stepper">
             @for (h of expediente.historialSteps; track h.stepOrder + h.estado + $index; let last = $last) {

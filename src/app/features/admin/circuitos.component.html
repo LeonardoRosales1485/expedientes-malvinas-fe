@@ -1,9 +1,15 @@
 @if (!showEditor) {
   <h1 class="page-title">Circuitos administrativos</h1>
-  <div class="toolbar">
+  <div class="toolbar-row">
+    <div class="filters card" style="margin-bottom:0; flex:1">
+      <label>
+        Buscar
+        <input type="search" [(ngModel)]="searchText" placeholder="Nombre o descripción…" />
+      </label>
+    </div>
     <button type="button" class="btn-primary" (click)="nuevo()">+ Nuevo circuito</button>
   </div>
-  @for (c of circuitos; track c.id) {
+  @for (c of filteredCircuitos; track c.id) {
     <div class="card wf-card">
       <div class="wf-head">
         <h3>{{ c.nombre }} <small>v{{ c.version }}</small></h3>

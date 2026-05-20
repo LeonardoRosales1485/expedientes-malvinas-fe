@@ -2,6 +2,12 @@
 @if (error) { <p class="error">{{ error }}</p> }
 
 <div class="toolbar">
+  <div class="filters card" style="margin-bottom:0; flex:1">
+    <label>
+      Buscar
+      <input type="search" [(ngModel)]="searchText" placeholder="Email, nombre o repartición…" />
+    </label>
+  </div>
   <button type="button" class="btn-primary" (click)="nuevo()">+ Nuevo usuario</button>
 </div>
 
@@ -57,7 +63,7 @@
       <tr><th>Email</th><th>Nombre</th><th>Reparticiones</th><th>Roles</th><th>Estado</th><th></th></tr>
     </thead>
     <tbody>
-      @for (u of users; track u.id) {
+      @for (u of filteredUsers; track u.id) {
         <tr>
           <td>{{ u.email }}</td>
           <td>{{ u.nombre }} {{ u.apellido }}@if (u.esJefeDeArea) { <span class="badge info" style="margin-left:0.4rem">Jefe</span> }</td>
@@ -78,7 +84,7 @@
 </div>
 
 <div class="user-cards">
-  @for (u of users; track u.id) {
+  @for (u of filteredUsers; track u.id) {
     <div class="card user-card">
       <div class="uc-head">
         <span class="uc-email">{{ u.email }}</span>

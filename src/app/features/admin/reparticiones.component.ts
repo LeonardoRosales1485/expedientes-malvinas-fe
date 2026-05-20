@@ -17,6 +17,15 @@ export class ReparticionesComponent implements OnInit {
   reps: Reparticion[] = [];
   editing: Partial<Reparticion> | null = null;
   error = '';
+  searchText = '';
+
+  get filteredReps(): Reparticion[] {
+    const q = this.searchText.toLowerCase().trim();
+    if (!q) return this.reps;
+    return this.reps.filter(
+      (r) => r.nombre.toLowerCase().includes(q) || r.sigla.toLowerCase().includes(q),
+    );
+  }
 
   ngOnInit(): void {
     this.load();

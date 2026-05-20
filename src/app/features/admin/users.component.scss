@@ -1,4 +1,4 @@
-.toolbar { margin-bottom: 1rem; }
+.toolbar { margin-bottom: 1rem; display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; }
 .form-card label { display: block; margin-bottom: 0.75rem; }
 .form-card input { width: 100%; margin-top: 0.25rem; }
 .inline { display: block; margin-bottom: 0.35rem; font-weight: normal; }

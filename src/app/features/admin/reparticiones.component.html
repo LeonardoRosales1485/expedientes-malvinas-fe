@@ -3,6 +3,12 @@
 @if (error) { <p class="error">{{ error }}</p> }
 
 <div class="toolbar">
+  <div class="filters card" style="margin-bottom:0; flex:1">
+    <label>
+      Buscar
+      <input type="search" [(ngModel)]="searchText" placeholder="Nombre o sigla…" />
+    </label>
+  </div>
   <button type="button" class="btn-primary" (click)="nuevo()">+ Nueva repartición</button>
 </div>
 
@@ -25,7 +31,7 @@
       <tr><th>Sigla</th><th>Nombre</th><th>Descripción</th><th></th></tr>
     </thead>
     <tbody>
-      @for (r of reps; track r.id) {
+      @for (r of filteredReps; track r.id) {
         <tr>
           <td>{{ r.sigla }}</td>
           <td>{{ r.nombre }}</td>
@@ -40,7 +46,7 @@
 </div>
 
 <div class="rep-cards">
-  @for (r of reps; track r.id) {
+  @for (r of filteredReps; track r.id) {
     <div class="card rep-card">
       <div class="rc-head">
         <span class="rc-sigla badge info">{{ r.sigla }}</span>

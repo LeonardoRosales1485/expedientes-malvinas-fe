@@ -246,6 +246,10 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
     return this.expediente?.historialSteps.filter((h) => h.estado === 'completado').length ?? 0;
   }
 
+  get totalPasosCircuito(): number {
+    return this.circuito ? this.circuito.steps.length : (this.expediente?.historialSteps.length ?? 0);
+  }
+
   stepEstadoLabel(h: HistorialStep): string {
     if (h.estado === 'completado') return 'Completado';
     if (h.estado === 'observado') return 'Devuelto';

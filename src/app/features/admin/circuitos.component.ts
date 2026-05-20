@@ -32,6 +32,17 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   showEditor = false;
   error = '';
   expandedSteps = new Set<number>();
+  searchText = '';
+
+  get filteredCircuitos(): CircuitoAdministrativo[] {
+    const q = this.searchText.toLowerCase().trim();
+    if (!q) return this.circuitos;
+    return this.circuitos.filter(
+      (c) =>
+        c.nombre.toLowerCase().includes(q) ||
+        (c.descripcion ?? '').toLowerCase().includes(q),
+    );
+  }
 
   @HostBinding('class.circuitos--editing')
   get isEditingHost(): boolean {

@@ -1,3 +1,7 @@
+<div class="env-banner">
+  ⚠ Entorno de pruebas: Nada de lo registrado aquí impacta en trámites reales
+</div>
+
 @if (sidebarOpen) {
   <div class="sidebar-overlay" (click)="closeSidebar()"></div>
 }
@@ -8,7 +12,7 @@
   </button>
 
   <div class="sidebar-brand">
-    <span class="logo">MMA</span>
+    <img src="assets/logo.png" class="logo-img" alt="MMA">
     <div class="sidebar-label brand-text">
       <strong>Malvinas Argentinas</strong>
       <small>Expediente Digital</small>
@@ -104,6 +108,7 @@
 </aside>
 
 @if (showPanel) {
+  <div class="notif-overlay" (click)="showPanel = false"></div>
   <div class="notif-panel card">
     <h4>Notificaciones</h4>
     @if (notifications.length === 0) {

@@ -1,8 +1,29 @@
 :host {
   --sidebar-collapsed: 52px;
   --sidebar-width: 264px;
+  --banner-h: 30px;
   display: block;
   min-height: 100vh;
+}
+
+/* ===== Environment banner ===== */
+.env-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 400;
+  height: var(--banner-h);
+  background: #fef2f2;
+  border-bottom: 1px solid #fca5a5;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  letter-spacing: 0.01em;
 }
 
 :host.shell--circuito-editor,
@@ -15,7 +36,10 @@
 /* ===== Overlay ===== */
 .sidebar-overlay {
   position: fixed;
-  inset: 0;
+  top: var(--banner-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 290;
   animation: overlayIn 350ms ease;
@@ -29,9 +53,9 @@
 /* ===== Sidebar ===== */
 .sidebar {
   position: fixed;
-  top: 0;
+  top: var(--banner-h);
   left: 0;
-  height: 100dvh;
+  height: calc(100dvh - var(--banner-h));
   width: var(--sidebar-collapsed);
   background: var(--mma-navy);
   color: #fff;
@@ -77,24 +101,17 @@
   display: flex;
   align-items: center;
   padding: 0.6rem 0;
-  padding-left: 14px;
+  padding-left: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
   min-height: 52px;
 }
 
-.logo {
-  background: var(--mma-green);
-  color: #fff;
-  font-weight: 800;
-  padding: 0.32rem 0.45rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  flex-shrink: 0;
+.logo-img {
   width: 36px;
-  text-align: center;
-  box-sizing: border-box;
-  letter-spacing: 0.02em;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .brand-text {
@@ -334,6 +351,12 @@
 }
 
 /* ===== Notification panel (fixed, outside sidebar overflow) ===== */
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 149;
+}
+
 .notif-panel {
   position: fixed;
   left: calc(var(--sidebar-collapsed) + 0.75rem);
@@ -390,8 +413,9 @@
 /* ===== Main content ===== */
 .main {
   margin-left: var(--sidebar-collapsed);
+  margin-top: var(--banner-h);
   padding: 1.5rem;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--banner-h));
   box-sizing: border-box;
 
   @media (max-width: 767px) {
@@ -406,8 +430,8 @@
   &.main--no-scroll {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
-    max-height: 100dvh;
+    height: calc(100dvh - var(--banner-h));
+    max-height: calc(100dvh - var(--banner-h));
     min-height: 0;
     overflow: hidden;
     padding: 1rem 1.25rem;

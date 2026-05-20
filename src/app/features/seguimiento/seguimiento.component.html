@@ -1,24 +1,42 @@
 <h1 class="page-title">Seguimiento de trámites</h1>
 <p class="subtitle">Consulte el estado de los expedientes</p>
 
+@if (filterReparticionId) {
+  <div class="filter-banner">
+    <span>Filtrando por repartición</span>
+    <button type="button" class="btn-secondary small" (click)="clearFilter()">✕ Quitar filtro</button>
+  </div>
+}
+
 @if (expedientes.length === 0) {
   <p class="empty">No hay expedientes para mostrar.</p>
 } @else {
-  <div class="seg-layout">
-    <aside class="seg-list-col" aria-label="Lista de expedientes">
-      @for (exp of expedientes; track exp.id) {
-        <app-seguimiento-expediente-card
-          [expediente]="exp"
-          [selected]="isSelected(exp.id)"
-          (selectExpediente)="selectExpediente(exp.id)" />
-      }
-    </aside>
-    <section class="seg-detail-col" aria-label="Detalle del expediente">
-      @if (selected) {
-        <app-seguimiento-detail-panel [expediente]="selected" />
-      } @else {
-        <app-seguimiento-placeholder />
-      }
-    </section>
+  <div class="filters card">
+    <label>
+      Buscar
+      <input type="search" [(ngModel)]="searchText" placeholder="N° expediente, tipo de trámite u objeto…" />
+    </label>
   </div>
+
+  @if (filteredExpedientes.length === 0) {
+    <p class="empty">Sin resultados para "{{ searchText }}".</p>
+  } @else {
+    <div class="seg-layout">
+      <aside class="seg-list-col" aria-label="Lista de expedientes">
+        @for (exp of filteredExpedientes; track exp.id) {
+          <app-seguimiento-expediente-card
+            [expediente]="exp"
+            [selected]="isSelected(exp.id)"
+            (selectExpediente)="selectExpediente(exp.id)" />
+        }
+      </aside>
+      <section class="seg-detail-col" aria-label="Detalle del expediente">
+        @if (selected) {
+          <app-seguimiento-detail-panel [expediente]="selected" />
+        } @else {
+          <app-seguimiento-placeholder />
+        }
+      </section>
+    </div>
+  }
 }

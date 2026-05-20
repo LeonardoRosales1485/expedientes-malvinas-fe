@@ -1,21 +1,5 @@
 .page-title { color: var(--mma-navy); margin: 0 0 0.25rem; }
 .subtitle { color: var(--mma-text-muted); margin: 0 0 1.5rem; }
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  label { font-size: 0.85rem; }
-  select { display: block; margin-top: 0.25rem; min-width: 180px; }
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    gap: 0.75rem;
-    label { width: 100%; }
-    select { width: 100%; min-width: unset; }
-  }
-}
 .task-list { display: grid; gap: 1rem; }
 .task-card {
   h3 { margin: 0.5rem 0; color: var(--mma-navy); }
