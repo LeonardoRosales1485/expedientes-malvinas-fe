@@ -5,9 +5,8 @@ node_modules/
 dist/
 .angular/
 
-# Environment files
-src/environments/environment.*.ts
-!src/environments/environment.ts
+# Environment files (solo ignorar overrides locales si los hubiera)
+src/environments/environment.local.ts
 
 # IDE
 .idea/
