@@ -1,0 +1,14 @@
+<button
+  type="button"
+  class="seg-list-item card"
+  [class.selected]="selected"
+  (click)="onSelect()"
+  [attr.aria-pressed]="selected"
+>
+  <span class="seg-id">{{ expediente.numeroExpediente }}</span>
+  <span class="seg-objeto">{{ expediente.caratula.objeto }}</span>
+  <span class="badge-group seg-badge">
+    <span class="badge-label">Estado:</span>
+    <span class="badge info">{{ expediente.estadoActual | estadoLabel }}</span>
+  </span>
+</button>

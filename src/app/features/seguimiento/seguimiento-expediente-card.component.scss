@@ -1,0 +1,45 @@
+.seg-list-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  padding: 0.5rem 0.65rem;
+  margin-bottom: 0.4rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+
+  &.selected {
+    border-color: var(--mma-blue-accent);
+    background: #f0f7ff;
+  }
+}
+
+.seg-id {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--mma-navy);
+  white-space: nowrap;
+}
+
+.seg-objeto {
+  font-size: 0.78rem;
+  color: var(--mma-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.seg-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  white-space: nowrap;
+}

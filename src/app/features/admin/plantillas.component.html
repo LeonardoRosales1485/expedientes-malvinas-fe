@@ -1,0 +1,66 @@
+<h1 class="page-title">Plantillas de actos administrativos</h1>
+<p class="subtitle">Decretos, resoluciones y disposiciones con placeholders automáticos</p>
+
+<button class="btn-primary" (click)="nueva()">+ Nueva plantilla</button>
+
+@if (editing !== null) {
+  <div class="editor-card card">
+    <h2>{{ editing['id'] ? 'Editar plantilla' : 'Nueva plantilla' }}</h2>
+    <label>
+      Nombre
+      <input type="text" [(ngModel)]="editing['nombre']" placeholder="Ej. Decreto de habilitación" />
+    </label>
+    <label>
+      Tipo de acto
+      <select [(ngModel)]="editing['tipoActo']">
+        @for (t of TIPOS; track t) {
+          <option [value]="t">{{ t }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Cuerpo HTML
+      <p class="hint">Placeholders disponibles:
+        <code>{{ '{{numeroExpediente}}' }}</code>
+        <code>{{ '{{tipoTramite}}' }}</code>
+        <code>{{ '{{objeto}}' }}</code>
+        <code>{{ '{{iniciador}}' }}</code>
+        <code>{{ '{{fechaInicio}}' }}</code>
+      </p>
+      <textarea [(ngModel)]="editing['cuerpoHtml']" rows="12" class="html-editor"></textarea>
+    </label>
+    <div class="editor-actions">
+      <button class="btn-primary" (click)="guardar()" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+    </div>
+  </div>
+}
+
+<div class="card table-wrap">
+  <table class="pt-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (plantillas.length === 0) {
+        <tr><td colspan="3" class="empty">Sin plantillas. Crea la primera.</td></tr>
+      }
+      @for (p of plantillas; track p.id) {
+        <tr>
+          <td>{{ p.nombre }}</td>
+          <td><span class="tipo-badge">{{ p.tipoActo }}</span></td>
+          <td class="actions">
+            <button class="btn-secondary small" (click)="editar(p)">Editar</button>
+            <button class="btn-danger small" (click)="eliminar(p)">Eliminar</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,99 @@
+.v-stepper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.v-step {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  column-gap: 0.55rem;
+  align-items: start;
+}
+
+.v-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+}
+
+.v-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.v-line {
+  flex: 1;
+  width: 2px;
+  min-height: 0.65rem;
+  margin: 2px 0;
+  background: #d1d5db;
+  border-radius: 1px;
+
+  &.done {
+    background: var(--mma-blue-accent);
+  }
+}
+
+.v-step.done .v-dot {
+  background: var(--mma-blue-accent);
+  border: 2px solid var(--mma-blue-accent);
+  color: #fff;
+}
+
+.v-check {
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.v-step.current .v-dot {
+  background: #fff;
+  border: 2px solid var(--mma-blue-accent);
+}
+
+.v-step.pending .v-dot {
+  background: #e5e7eb;
+  border: 2px solid #e5e7eb;
+}
+
+.v-content {
+  padding-bottom: 0.5rem;
+  min-width: 0;
+}
+
+.v-step:last-child .v-content {
+  padding-bottom: 0;
+}
+
+.v-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mma-navy);
+  line-height: 1.25;
+}
+
+.v-step.pending .v-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.v-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--mma-text-muted);
+  margin-top: 0.1rem;
+  line-height: 1.2;
+}
+
+.v-step.current .v-hint {
+  color: var(--mma-blue-accent);
+}

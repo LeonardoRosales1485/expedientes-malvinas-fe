@@ -1,0 +1,96 @@
+<h1 class="page-title">Usuarios</h1>
+@if (error) { <p class="error">{{ error }}</p> }
+
+<div class="toolbar">
+  <button type="button" class="btn-primary" (click)="nuevo()">+ Nuevo usuario</button>
+</div>
+
+@if (editing) {
+  <div class="card form-card">
+    <h3>{{ editing.id ? 'Editar' : 'Nuevo' }} usuario</h3>
+    <label>Email <input type="email" [(ngModel)]="editing.email" [readonly]="!!editing.id" /></label>
+  @if (!editing.id) {
+    <label>Contraseña <input type="password" [(ngModel)]="editing.password" /></label>
+  } @else {
+    <label>Nueva contraseña (opcional) <input type="password" [(ngModel)]="editing.password" /></label>
+  }
+    <label>Nombre <input [(ngModel)]="editing.nombre" /></label>
+    <label>Apellido <input [(ngModel)]="editing.apellido" /></label>
+    <fieldset>
+      <legend>Reparticiones</legend>
+      @for (r of reparticiones; track r.id) {
+        <label class="inline">
+          <input type="checkbox"
+            [checked]="editing.reparticionesIds.includes(r.id)"
+            (change)="toggleRep(r.id, $any($event.target).checked)" />
+          {{ r.sigla }} — {{ r.nombre }}
+        </label>
+      }
+    </fieldset>
+    <fieldset>
+      <legend>Roles</legend>
+      @for (role of allRoles; track role) {
+        <label class="inline">
+          <input type="checkbox"
+            [checked]="editing.roles.includes(role)"
+            (change)="toggleRole(role, $any($event.target).checked)" />
+          {{ roleLabel(role) }}
+        </label>
+      }
+    </fieldset>
+    @if (editing.id) {
+      <label class="inline">
+        <input type="checkbox" [(ngModel)]="editing.esJefeDeArea" />
+        Jefe de área (puede crear/editar usuarios de su repartición)
+      </label>
+    }
+    <div class="actions">
+      <button type="button" class="btn-primary" (click)="guardar()">Guardar</button>
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+    </div>
+  </div>
+}
+
+<div class="table-scroll card">
+  <table class="table">
+    <thead>
+      <tr><th>Email</th><th>Nombre</th><th>Reparticiones</th><th>Roles</th><th>Estado</th><th></th></tr>
+    </thead>
+    <tbody>
+      @for (u of users; track u.id) {
+        <tr>
+          <td>{{ u.email }}</td>
+          <td>{{ u.nombre }} {{ u.apellido }}@if (u.esJefeDeArea) { <span class="badge info" style="margin-left:0.4rem">Jefe</span> }</td>
+          <td>{{ repNombres(u.reparticionesIds) }}</td>
+          <td>{{ rolesText(u.roles) }}</td>
+          <td>
+            @if (!u.activo) { <span class="badge danger">Suspendido</span> }
+            @else { <span class="badge ok">Activo</span> }
+          </td>
+          <td class="row-actions">
+            <button type="button" class="btn-secondary small" (click)="editar(u)">Editar</button>
+            <button type="button" class="btn-secondary small" (click)="toggleActivo(u)">{{ u.activo ? 'Suspender' : 'Reactivar' }}</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="user-cards">
+  @for (u of users; track u.id) {
+    <div class="card user-card">
+      <div class="uc-head">
+        <span class="uc-email">{{ u.email }}</span>
+        <button type="button" class="btn-secondary small" (click)="editar(u)">Editar</button>
+      </div>
+      <div class="uc-name">{{ u.nombre }} {{ u.apellido }}
+        @if (u.esJefeDeArea) { <span class="badge info">Jefe</span> }
+        @if (!u.activo) { <span class="badge danger">Suspendido</span> }
+      </div>
+      <div class="uc-meta"><strong>Reparticiones:</strong> {{ repNombres(u.reparticionesIds) || '—' }}</div>
+      <div class="uc-meta"><strong>Roles:</strong> {{ rolesText(u.roles) }}</div>
+      <button type="button" class="btn-secondary small" style="margin-top:0.5rem" (click)="toggleActivo(u)">{{ u.activo ? 'Suspender' : 'Reactivar' }}</button>
+    </div>
+  }
+</div>

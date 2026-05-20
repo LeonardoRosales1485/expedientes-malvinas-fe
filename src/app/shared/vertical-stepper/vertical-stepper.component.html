@@ -1,0 +1,22 @@
+<ol class="v-stepper" role="list">
+  @for (step of steps; track $index; let last = $last) {
+    <li class="v-step" [class.done]="step.state === 'done'" [class.current]="step.state === 'current'" [class.pending]="step.state === 'pending'">
+      <div class="v-track">
+        <span class="v-dot" aria-hidden="true">
+          @if (step.state === 'done') {
+            <span class="v-check">✓</span>
+          }
+        </span>
+        @if (!last) {
+          <span class="v-line" [class.done]="step.state === 'done'"></span>
+        }
+      </div>
+      <div class="v-content">
+        <span class="v-label">{{ step.label }}</span>
+        @if (step.hint) {
+          <span class="v-hint">{{ step.hint }}</span>
+        }
+      </div>
+    </li>
+  }
+</ol>

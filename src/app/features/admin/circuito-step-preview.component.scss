@@ -1,0 +1,73 @@
+.preview-mockup {
+  padding: 0.5rem 0;
+}
+
+.mock-field {
+  display: block;
+  margin-bottom: 0.75rem;
+  .mock-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    .req { color: var(--mma-danger); }
+    .tipo-hint {
+      display: block;
+      font-weight: 400;
+      font-size: 0.75rem;
+      color: var(--mma-text-muted);
+    }
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f9fafb;
+    font-size: 0.9rem;
+  }
+}
+
+.upload-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  background: #fafafa;
+  color: var(--mma-text-muted);
+  .upload-icon {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  p { margin: 0 0 0.25rem; font-weight: 600; color: var(--mma-text); }
+  small { font-size: 0.8rem; }
+}
+
+.approval-mock {
+  .meta-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    li { margin-bottom: 0.35rem; }
+  }
+  textarea {
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f9fafb;
+  }
+  .mock-btn {
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+}
+
+.empty-hint {
+  font-size: 0.85rem;
+  color: var(--mma-text-muted);
+  font-style: italic;
+}

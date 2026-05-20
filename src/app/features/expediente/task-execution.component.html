@@ -1,0 +1,121 @@
+<div class="task-panel card">
+  @if (editMode) {
+    <h3>Editar paso</h3>
+  }
+  <p class="nombre-step">{{ step.nombreStep }}</p>
+  <p class="tipo">Acción: {{ tipoAccionLabel(step.tipoAccion) }}</p>
+  <p class="reparticion">Repartición: {{ reparticionNombre || step.reparticionId }}</p>
+
+  @switch (tipo) {
+    @case ('FORM') {
+      <form [formGroup]="form" (ngSubmit)="editMode ? submitEdit() : submitForm()">
+        @if (formFields.length === 0) {
+          <p class="hint">Este paso no tiene campos de formulario configurados.</p>
+        }
+        @for (field of formFields; track field.nombre) {
+          <label>
+            {{ field.nombre }}
+            @switch (field.tipo) {
+              @case ('boolean') {
+                <select [formControlName]="field.nombre">
+                  <option value="">—</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              }
+              @case ('textarea') {
+                <textarea [formControlName]="field.nombre" rows="3"></textarea>
+              }
+              @case ('date') {
+                <input type="date" [formControlName]="field.nombre" />
+              }
+              @case ('number') {
+                <input type="number" [formControlName]="field.nombre" />
+              }
+              @case ('select') {
+                <select [formControlName]="field.nombre">
+                  <option value="">—</option>
+                  @for (opt of field.opciones ?? []; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+              }
+              @default {
+                <input type="text" [formControlName]="field.nombre" [attr.maxlength]="textMaxLength" />
+              }
+            }
+          </label>
+        }
+        <button type="submit" class="btn-primary" [disabled]="submitting || (formFields.length > 0 && form.invalid)">
+          {{ editMode ? 'Guardar cambios ›' : (submitting ? 'Completando...' : 'Completar paso ›') }}
+        </button>
+      </form>
+    }
+    @case ('FILE_UPLOAD') {
+      <label class="file-label">
+        {{ editMode ? 'Agregar documentos' : 'Adjuntar documentos (mín. ' + minArchivos + ')' }}
+        <input #fileInput type="file" multiple accept=".pdf,.jpg,.jpeg,.png" (change)="onFilesSelected($event)" />
+      </label>
+      @if (selectedFiles.length) {
+        <ul class="file-list">
+          @for (f of selectedFiles; track f.name) {
+            <li>{{ f.name }} ({{ f.size | number }} bytes)</li>
+          }
+        </ul>
+      }
+      @if (uploadError) { <p class="error">{{ uploadError }}</p> }
+      <button type="button" class="btn-primary" (click)="editMode ? submitEdit() : submitFile()" [disabled]="uploading">
+        {{ uploading ? 'Subiendo...' : (editMode ? 'Subir archivos ›' : 'Subir y completar paso ›') }}
+      </button>
+    }
+    @case ('APPROVAL') {
+      @if (editMode && yaAprobo) {
+        <p class="hint">Ya registró su aprobación en este paso.</p>
+      } @else {
+        <label>
+          Comentario (opcional)
+          <textarea [(ngModel)]="comentario" rows="3"></textarea>
+        </label>
+        <button type="button" class="btn-primary" (click)="editMode ? submitEdit() : submitApproval()">
+          {{ editMode ? 'Registrar aprobación ›' : 'Aprobar ›' }}
+        </button>
+      }
+    }
+  }
+
+  @if (!editMode) {
+    <hr />
+    <label>
+      Devolver con observaciones
+      <textarea [(ngModel)]="observacionDevolver" rows="2" placeholder="Indique qué falta corregir"></textarea>
+    </label>
+    <button type="button" class="btn-secondary" (click)="emitDevolver()">Devolver expediente</button>
+
+    @if (usuariosDelegables.length > 0) {
+      <hr />
+      <button type="button" class="btn-secondary" (click)="showDelegarPanel = !showDelegarPanel">
+        {{ showDelegarPanel ? 'Cancelar delegación' : 'Delegar paso' }}
+      </button>
+      @if (showDelegarPanel) {
+        <div class="delegar-panel">
+          <label>
+            Delegar a
+            <select [(ngModel)]="delegadoId">
+              <option value="">— Seleccionar usuario —</option>
+              @for (u of usuariosDelegables; track u.id) {
+                <option [value]="u.id">{{ u.nombre }} {{ u.apellido }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Motivo (opcional)
+            <textarea [(ngModel)]="motivoDelegacion" rows="2"></textarea>
+          </label>
+          <button type="button" class="btn-primary" (click)="emitDelegar()" [disabled]="!delegadoId || delegando">
+            {{ delegando ? 'Delegando...' : 'Confirmar delegación' }}
+          </button>
+        </div>
+      }
+    }
+  }
+</div>

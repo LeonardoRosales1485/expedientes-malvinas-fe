@@ -1,0 +1,107 @@
+<h1 class="page-title">Reportes y Dashboard</h1>
+<p class="subtitle">Métricas en tiempo real · Decreto 2239/21</p>
+
+@if (dashboard) {
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-value">{{ dashboard.total }}</span>
+      <span class="kpi-label">Total expedientes</span>
+    </div>
+    <div class="kpi-card kpi-ok">
+      <span class="kpi-value">{{ dashboard.enPlazo }}</span>
+      <span class="kpi-label">En plazo</span>
+    </div>
+    <div class="kpi-card kpi-warn">
+      <span class="kpi-value">{{ dashboard.proximoVencer }}</span>
+      <span class="kpi-label">Próximo a vencer</span>
+    </div>
+    <div class="kpi-card kpi-danger">
+      <span class="kpi-value">{{ dashboard.vencidos }}</span>
+      <span class="kpi-label">Vencidos</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-value">{{ dashboard.cerrados }}</span>
+      <span class="kpi-label">Cerrados</span>
+    </div>
+    <div class="kpi-card kpi-pct">
+      <span class="kpi-value">{{ cumplimientoPct }}%</span>
+      <span class="kpi-label">Cumplimiento</span>
+    </div>
+  </div>
+
+  <div class="estado-chips">
+    @for (entry of dashboard.porEstado | keyvalue; track entry.key) {
+      <span class="chip">{{ entry.key }}: <strong>{{ entry.value }}</strong></span>
+    }
+  </div>
+}
+
+<div class="section-header">
+  <h2>Expedientes por repartición</h2>
+</div>
+<div class="card table-wrap">
+  <table class="rep-table">
+    <thead>
+      <tr>
+        <th>Sigla</th>
+        <th>Repartición</th>
+        <th class="num">Total</th>
+        <th class="num">Promedio días</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (porReparticion.length === 0) {
+        <tr><td colspan="4" class="empty">Sin datos.</td></tr>
+      }
+      @for (r of porReparticion; track r.reparticionId) {
+        <tr>
+          <td><span class="sigla-badge">{{ r.sigla }}</span></td>
+          <td>{{ r.nombre }}</td>
+          <td class="num">{{ r.total }}</td>
+          <td class="num">{{ r.promedioDias | number:'1.0-1' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="section-header">
+  <h2>Vencimientos críticos</h2>
+</div>
+<div class="card table-wrap">
+  <table class="rep-table">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Trámite</th>
+        <th>Estado expediente</th>
+        <th>Vencimiento</th>
+        <th>Fecha inicio</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (vencimientos.length === 0) {
+        <tr><td colspan="5" class="empty">Sin expedientes críticos.</td></tr>
+      }
+      @for (v of vencimientos; track v.id) {
+        <tr>
+          <td>{{ v.numero }}</td>
+          <td>{{ v.tipoTramite }}</td>
+          <td>{{ v.estadoActual }}</td>
+          <td>
+            <span [class]="'badge-vcto badge-' + v.estadoVencimiento">{{ v.estadoVencimiento }}</span>
+          </td>
+          <td>{{ v.createdAt | date:'dd/MM/yyyy' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="section-header">
+  <h2>Reporte quincenal</h2>
+  <p class="section-sub">Decreto 2239/21 — expedientes de los últimos 15 días</p>
+  <button class="btn-primary" (click)="exportarExcel()" [disabled]="exportando">
+    {{ exportando ? 'Generando...' : 'Exportar Excel' }}
+  </button>
+</div>

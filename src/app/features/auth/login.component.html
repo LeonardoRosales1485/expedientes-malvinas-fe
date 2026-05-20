@@ -1,0 +1,48 @@
+<div class="login-page">
+  <div class="login-card card">
+    <div class="login-header">
+      <span class="logo">MMA</span>
+      <h1>Expediente Digital</h1>
+      <p>Malvinas Argentinas — Autogestión municipal</p>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Email
+        <input type="email" formControlName="email" autocomplete="username" />
+      </label>
+      <label>
+        Contraseña
+        <div class="password-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+          <button type="button" class="toggle-password" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            @if (showPassword) { &#128065;&#65039; } @else { &#128065; }
+          </button>
+        </div>
+      </label>
+      @if (error) {
+        <p class="error">{{ error }}</p>
+      }
+      <button type="submit" class="btn-primary" [disabled]="loading || form.invalid">
+        Ingresar @if (loading) { ... }
+      </button>
+    </form>
+
+    <p class="register-link">¿Es vecino? <a routerLink="/registro-ciudadano">Registrarse como ciudadano</a></p>
+
+    @if (showDemoLogin && demoUsers.length > 0) {
+      <div class="demo-access">
+        <p class="demo-divider">Acceso rápido (desarrollo)</p>
+        <label class="demo-label">
+          Usuario demo
+          <select (change)="onDemoSelect($any($event.target).value)">
+            <option value="">— Seleccionar usuario —</option>
+            @for (u of demoUsers; track u.email) {
+              <option [value]="u.email">{{ u.label }}</option>
+            }
+          </select>
+        </label>
+        <p class="demo-hint">Contraseña demo: {{ environment.demoPassword || 'demo123' }}</p>
+      </div>
+    }
+  </div>
+</div>

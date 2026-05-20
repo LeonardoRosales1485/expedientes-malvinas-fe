@@ -1,0 +1,130 @@
+@if (sidebarOpen) {
+  <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+}
+
+<aside class="sidebar" [class.sidebar--open]="sidebarOpen">
+  <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Abrir/cerrar menú">
+    <span class="toggle-icon">{{ sidebarOpen ? '✕' : '☰' }}</span>
+  </button>
+
+  <div class="sidebar-brand">
+    <span class="logo">MMA</span>
+    <div class="sidebar-label brand-text">
+      <strong>Malvinas Argentinas</strong>
+      <small>Expediente Digital</small>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a routerLink="/bandeja" routerLinkActive="active" (click)="closeSidebar()">
+      <span class="nav-icon">📋</span>
+      <span class="sidebar-label">Bandeja</span>
+    </a>
+    @if (perm.canMutateExpediente()) {
+      <a routerLink="/expedientes/nuevo" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">✚</span>
+        <span class="sidebar-label">Nuevo trámite</span>
+      </a>
+    }
+    <a routerLink="/seguimiento" routerLinkActive="active" (click)="closeSidebar()">
+      <span class="nav-icon">🔎</span>
+      <span class="sidebar-label">Seguimiento</span>
+    </a>
+    @if (perm.canAccessAdmin() || perm.isJefeDeArea()) {
+      <hr class="sidebar-sep">
+      <div class="sidebar-section-header">
+        <span class="sidebar-label sidebar-section-label">Administración</span>
+      </div>
+      @if (perm.canAccessAdmin()) {
+        <a routerLink="/admin/circuitos" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">🔀</span>
+          <span class="sidebar-label">Circuitos</span>
+        </a>
+        <a routerLink="/admin/reparticiones" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">🏛</span>
+          <span class="sidebar-label">Reparticiones</span>
+        </a>
+        <a routerLink="/admin/auditoria" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">📋</span>
+          <span class="sidebar-label">Auditoría</span>
+        </a>
+        <a routerLink="/admin/reportes" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">📊</span>
+          <span class="sidebar-label">Reportes</span>
+        </a>
+        <a routerLink="/admin/archivo" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">🗂</span>
+          <span class="sidebar-label">Archivo</span>
+        </a>
+        <a routerLink="/admin/plantillas" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">📝</span>
+          <span class="sidebar-label">Plantillas</span>
+        </a>
+      }
+      <a routerLink="/admin/usuarios" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">👤</span>
+        <span class="sidebar-label">Usuarios</span>
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar-bottom">
+    @if (userReparticiones.length > 1) {
+      <div class="sidebar-row area-selector-row">
+        <span class="nav-icon">🏷</span>
+        <select class="sidebar-label area-select" [value]="auth.activeReparticionId() ?? ''" (change)="setActiveReparticion($event)" aria-label="Área activa">
+          <option value="">Todas las áreas</option>
+          @for (r of userReparticiones; track r.id) {
+            <option [value]="r.id">{{ r.sigla }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <button type="button" class="sidebar-row notif-row" (click)="togglePanel()" aria-label="Notificaciones">
+      <span class="nav-icon notif-icon-wrap">
+        🔔
+        @if (unreadCount > 0) {
+          <span class="notif-badge">{{ unreadCount }}</span>
+        }
+      </span>
+      <span class="sidebar-label">Notificaciones</span>
+    </button>
+
+    <div class="sidebar-row sidebar-user-row">
+      <span class="nav-icon user-avatar">{{ (auth.currentUser()?.nombre ?? 'U')[0] }}{{ (auth.currentUser()?.apellido ?? '')[0] }}</span>
+      <span class="sidebar-label user-name">{{ auth.currentUser()?.nombre }} {{ auth.currentUser()?.apellido }}</span>
+    </div>
+
+    <button type="button" class="sidebar-row logout-row" (click)="logout()">
+      <span class="nav-icon">→</span>
+      <span class="sidebar-label">Salir</span>
+    </button>
+  </div>
+</aside>
+
+@if (showPanel) {
+  <div class="notif-panel card">
+    <h4>Notificaciones</h4>
+    @if (notifications.length === 0) {
+      <p class="empty">Sin notificaciones</p>
+    } @else {
+      <ul>
+        @for (n of notifications; track n.id) {
+          <li [class.unread]="!n.leida">
+            <a [routerLink]="['/expedientes', n.expedienteId]" (click)="marcarLeida(n, $event)">
+              {{ n.mensaje }}
+            </a>
+            <small>{{ n.fecha | date:'short' }}</small>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}
+
+<main class="main" [class.main--no-scroll]="mainNoScroll">
+  <div class="main-viewport">
+    <router-outlet />
+  </div>
+</main>

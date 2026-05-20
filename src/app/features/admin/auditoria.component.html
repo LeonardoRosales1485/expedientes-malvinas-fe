@@ -1,0 +1,44 @@
+<h1 class="page-title">Auditoría</h1>
+<p class="subtitle">Registro de acciones de todos los usuarios del sistema</p>
+
+<label class="search-box">
+  Buscar
+  <input type="search" [(ngModel)]="search" (ngModelChange)="onSearch()" placeholder="Usuario, acción, expediente..." />
+</label>
+
+<div class="card table-wrap">
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Acción</th>
+        <th>Expediente</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (filtered.length === 0) {
+        <tr><td colspan="5" class="empty">Sin registros de auditoría.</td></tr>
+      }
+      @for (e of filtered; track e.id) {
+        <tr>
+          <td>
+            <strong>{{ e.userNombre }}</strong>
+            <small>{{ e.userEmail }}</small>
+          </td>
+          <td>{{ e.action }}</td>
+          <td>
+            @if (e.expedienteId) {
+              <a [routerLink]="['/expedientes', e.expedienteId]">{{ e.expedienteNumero || e.expedienteId }}</a>
+            } @else {
+              —
+            }
+          </td>
+          <td>{{ e.fecha | date:'dd/MM/yyyy':'':'es-AR' }}</td>
+          <td>{{ e.fecha | date:'HH:mm:ss':'':'es-AR' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

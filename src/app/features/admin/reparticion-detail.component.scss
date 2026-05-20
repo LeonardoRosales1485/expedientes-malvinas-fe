@@ -1,0 +1,123 @@
+.back {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--mma-navy);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.detail-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+
+  .page-title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--mma-navy);
+  }
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.error { color: #c0392b; }
+.empty { color: var(--mma-text-muted); font-size: 0.85rem; }
+
+.form-card label {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  input, textarea { width: 100%; margin-top: 0.2rem; }
+}
+
+.meta-card p { margin: 0.35rem 0; font-size: 0.88rem; }
+
+.section-card {
+  margin-top: 0.65rem;
+  padding: 0.85rem 1rem;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    color: var(--mma-navy);
+  }
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  h2 { margin: 0; }
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th, td {
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  th { font-weight: 600; color: var(--mma-navy); }
+}
+
+.badge.inactive { background: #e0e0e0; color: #666; }
+
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 200;
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  min-width: 320px;
+  max-width: 420px;
+  padding: 1.25rem;
+
+  h3 { margin: 0 0 0.5rem; }
+  p { font-size: 0.85rem; color: var(--mma-text-muted); margin: 0 0 0.75rem; }
+  label { display: block; font-weight: 600; font-size: 0.88rem; }
+  input { width: 100%; margin-top: 0.25rem; padding: 0.45rem; }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

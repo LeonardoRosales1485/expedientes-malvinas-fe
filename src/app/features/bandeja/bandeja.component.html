@@ -1,0 +1,59 @@
+<h1 class="page-title">Bandeja de tareas</h1>
+<p class="subtitle">Solo trámites con paso pendiente en su repartición</p>
+
+<div class="filters card">
+  <label>
+    Circuito administrativo
+    <select [(ngModel)]="filterCircuito" (ngModelChange)="load()">
+      <option value="">Todos</option>
+      @for (c of circuitos; track c.id) {
+        <option [value]="c.id">{{ c.nombre }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Estado
+    <select [(ngModel)]="filterEstado" (ngModelChange)="load()">
+      <option value="">Todos</option>
+      <option value="EN_ANALISIS_TECNICO">En análisis</option>
+      <option value="PENDIENTE_FIRMA">Pendiente firma</option>
+      <option value="OBSERVADO">Observado</option>
+      <option value="VENCIDO">Vencido</option>
+    </select>
+  </label>
+  <label>
+    Vencimiento
+    <select [(ngModel)]="filterVencimiento" (ngModelChange)="load()">
+      <option value="">Todos</option>
+      <option value="enPlazo">En plazo</option>
+      <option value="proximoVencer">Próximo a vencer</option>
+      <option value="vencido">Vencido</option>
+    </select>
+  </label>
+</div>
+
+@if (loading) {
+  <p>Cargando...</p>
+} @else if (filteredTareas().length === 0) {
+  <div class="card empty">No hay tareas pendientes.</div>
+} @else {
+  <div class="task-list">
+    @for (exp of filteredTareas(); track exp.id) {
+      <article class="card task-card">
+        <div class="task-head">
+          <span class="num">{{ exp.numeroExpediente }}</span>
+          <span class="badge-group">
+            <span class="badge-label">Estado:</span>
+            <span class="badge" [class]="badgeClass(exp.estadoActual, exp.estadoVencimiento)">
+              {{ exp.estadoActual | estadoLabel }}
+            </span>
+          </span>
+        </div>
+        <h3>{{ exp.caratula.tipoTramite }}</h3>
+        <p class="obj">{{ exp.caratula.objeto }}</p>
+        <p class="step">Paso actual: {{ pasoActualLabel(exp) }}</p>
+        <a [routerLink]="['/expedientes', exp.id]" class="btn-primary">Tomar tarea ›</a>
+      </article>
+    }
+  </div>
+}

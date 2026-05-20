@@ -1,0 +1,103 @@
+<a routerLink="/admin/reparticiones" class="back">‹ Volver a reparticiones</a>
+
+@if (!detalle) {
+  <p>Cargando...</p>
+} @else {
+  <div class="detail-topbar">
+    <h1 class="page-title">{{ detalle.reparticion.sigla }} — {{ detalle.reparticion.nombre }}</h1>
+    <div class="topbar-actions">
+      @if (!editing) {
+        <button type="button" class="btn-secondary" (click)="startEdit()">Editar</button>
+        <button type="button" class="btn-danger" (click)="openDelete()">Eliminar</button>
+      } @else {
+        <button type="button" class="btn-primary" (click)="guardar()">Guardar</button>
+        <button type="button" class="btn-secondary" (click)="cancelEdit()">Cancelar</button>
+      }
+    </div>
+  </div>
+
+  @if (error) { <p class="error">{{ error }}</p> }
+
+  @if (editing) {
+    <div class="card form-card">
+      <label>Sigla <input [(ngModel)]="editForm.sigla" maxlength="10" /></label>
+      <label>Nombre <input [(ngModel)]="editForm.nombre" /></label>
+      <label>Descripción <textarea [(ngModel)]="editForm.descripcion" rows="2"></textarea></label>
+    </div>
+  } @else {
+    <div class="card meta-card">
+      <p><strong>Sigla:</strong> {{ detalle.reparticion.sigla }}</p>
+      <p><strong>Descripción:</strong> {{ detalle.reparticion.descripcion || '—' }}</p>
+    </div>
+  }
+
+  <section class="card section-card">
+    <div class="section-head">
+      <h2>Usuarios asociados ({{ detalle.cantidadUsuarios }})</h2>
+      @if (detalle.cantidadUsuarios > 0) {
+        <div class="section-actions">
+          <button type="button" class="btn-danger small" (click)="suspenderTodos()">Suspender todos</button>
+          <button type="button" class="btn-secondary small" (click)="reactivarTodos()">Reactivar todos</button>
+        </div>
+      }
+    </div>
+    @if (detalle.usuarios.length === 0) {
+      <p class="empty">Ningún usuario asignado a esta repartición.</p>
+    } @else {
+      <table class="inner-table">
+        <thead>
+          <tr><th>Nombre</th><th>Email</th><th>Roles</th></tr>
+        </thead>
+        <tbody>
+          @for (u of detalle.usuarios; track u.id) {
+            <tr>
+              <td>{{ u.nombre }} {{ u.apellido }}</td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.roles.join(', ') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <section class="card section-card">
+    <h2>Circuitos administrativos ({{ detalle.cantidadCircuitos }})</h2>
+    @if (detalle.circuitos.length === 0) {
+      <p class="empty">No participa en ningún circuito.</p>
+    } @else {
+      <table class="inner-table">
+        <thead>
+          <tr><th>Nº</th><th>Nombre</th><th>Versión</th><th>Estado</th><th>Pasos</th></tr>
+        </thead>
+        <tbody>
+          @for (c of detalle.circuitos; track c.id) {
+            <tr>
+              <td>{{ c.numeroCatalogo ?? '—' }}</td>
+              <td>{{ c.nombre }}</td>
+              <td>v{{ c.version }}</td>
+              <td><span class="badge" [class.info]="c.activo" [class.inactive]="!c.activo">{{ c.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td>{{ c.pasosRelacionados }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+}
+
+@if (showDeleteDialog) {
+  <div class="dialog-backdrop" (click)="closeDelete()"></div>
+  <div class="dialog card" role="dialog">
+    <h3>Eliminar repartición</h3>
+    <p>Esta acción es irreversible. Ingrese la contraseña de administrador para confirmar.</p>
+    <label>
+      Contraseña
+      <input type="password" [(ngModel)]="deletePassword" autocomplete="off" />
+    </label>
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="closeDelete()">Cancelar</button>
+      <button type="button" class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+}

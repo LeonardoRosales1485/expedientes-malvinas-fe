@@ -1,0 +1,251 @@
+:host {
+  display: block;
+}
+
+:host.circuitos--editing {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.circuito-editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.toolbar { margin-bottom: 1rem; }
+.wf-card { margin-bottom: 1rem; }
+.wf-head { display: flex; justify-content: space-between; align-items: center; }
+.meta { color: #666; font-size: 0.9rem; }
+.steps-preview { margin: 0.5rem 0; padding-left: 1.25rem; font-size: 0.9rem; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.badge.inactive { background: #999; }
+
+.editor-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
+
+  .page-title {
+    margin: 0;
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+}
+
+.editor-topbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.circuito-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(360px, 1.2fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.preview-panel,
+.form-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  &.card {
+    padding: 1rem;
+  }
+}
+
+.panel-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.panel-subtitle {
+  margin: 0 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.accordion-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+
+  &.expanded .accordion-header {
+    border-bottom: 1px solid #e8e8e8;
+  }
+}
+
+.accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  min-height: 44px;
+  border: none;
+  background: #f8f9fa;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+
+  &:hover {
+    background: #f0f2f5;
+  }
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #1a5276;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.step-summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  small {
+    color: #666;
+    font-size: 0.78rem;
+  }
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: #888;
+  font-size: 0.7rem;
+}
+
+.accordion-body {
+  padding: 0.75rem;
+}
+
+.form-panel label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.form-panel input,
+.form-panel select,
+.form-panel textarea {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.step-block {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.step-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.error {
+  color: #c0392b;
+  flex-shrink: 0;
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.btn-danger.small { font-size: 0.85rem; }
+.hint { font-size: 0.85rem; color: #666; }
+.sub-block { margin: 0.75rem 0; border: 1px solid #ddd; padding: 0.75rem; }
+.inline { display: block; font-weight: normal; margin-bottom: 0.35rem; }
+.field-row {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+h3, h4 { margin: 1rem 0 0.5rem; }
+h4 { font-size: 0.95rem; }
+
+@media (max-width: 1023px) {
+  .circuito-editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-topbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .editor-topbar-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .editor-topbar .page-title {
+    font-size: 1.1rem;
+  }
+
+  .preview-panel,
+  .form-panel {
+    padding: 0.75rem;
+  }
+
+  .accordion-body {
+    padding: 0.5rem;
+  }
+
+  .field-row {
+    padding: 0.5rem;
+  }
+}

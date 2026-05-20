@@ -1,0 +1,57 @@
+<h1 class="page-title">Archivo y Caducidad</h1>
+<p class="subtitle">Ciclo de vida de expedientes cerrados · Etapa post-cierre</p>
+
+<div class="filters">
+  <label class="filter-label">
+    Filtrar por estado
+    <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltro()">
+      <option value="">Todos</option>
+      @for (k of estadoKeys; track k) {
+        <option [value]="k">{{ estadoLabels[k] }}</option>
+      }
+    </select>
+  </label>
+  <span class="filter-count">{{ filtered.length }} expedientes</span>
+</div>
+
+<div class="card table-wrap">
+  <table class="arch-table">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Trámite</th>
+        <th>Estado</th>
+        <th>Fecha cierre</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (filtered.length === 0) {
+        <tr><td colspan="5" class="empty">Sin expedientes archivados.</td></tr>
+      }
+      @for (exp of filtered; track exp.id) {
+        <tr>
+          <td>{{ exp.numeroExpediente }}</td>
+          <td>{{ exp.caratula.tipoTramite }}</td>
+          <td>
+            <span [class]="'badge-arch badge-' + exp.estadoActual">{{ estadoLabel(exp.estadoActual) }}</span>
+          </td>
+          <td>{{ exp.fechaCierre | date:'dd/MM/yyyy' }}</td>
+          <td><a [routerLink]="['/expedientes', exp.id]" class="link-ver">Ver</a></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="lifecycle-info card">
+  <h2>Ciclo de vida automático</h2>
+  <ol>
+    <li><strong>Cerrado → Archivo provisorio</strong> · A los 30 días del cierre</li>
+    <li><strong>Archivo provisorio → Intimado 1ª</strong> · A los 6 meses en archivo provisorio</li>
+    <li><strong>Intimado 1ª → Intimado 2ª</strong> · A los 15 días sin respuesta</li>
+    <li><strong>Intimado 2ª → Caducado</strong> · A los 15 días sin respuesta</li>
+    <li><strong>Caducado → Archivo definitivo</strong> · Al año del cierre original</li>
+  </ol>
+  <p class="lifecycle-note">El scheduler corre diariamente a las 07:00 hs.</p>
+</div>

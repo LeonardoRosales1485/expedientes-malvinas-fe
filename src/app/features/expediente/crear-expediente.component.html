@@ -1,0 +1,31 @@
+<h1 class="page-title">Iniciar trámite</h1>
+<div class="card form-card">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label class="field-full">
+      Circuito administrativo
+      <select formControlName="circuitoAdministrativoId">
+        <option value="">Seleccione...</option>
+        @for (c of circuitos; track c.id) {
+          <option [value]="c.id">{{ c.nombre }}</option>
+        }
+      </select>
+    </label>
+    <label class="field-full">
+      Objeto del expediente
+      <textarea formControlName="objeto" rows="2"></textarea>
+    </label>
+    <div class="form-row">
+      <label>
+        Nombre del iniciador
+        <input formControlName="iniciadorNombre" />
+      </label>
+      <label>
+        Documento (opcional)
+        <input formControlName="iniciadorDocumento" />
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">Iniciar expediente ›</button>
+    </div>
+  </form>
+</div>

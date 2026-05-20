@@ -1,0 +1,97 @@
+:root {
+  --mma-navy: #1b3a5f;
+  --mma-green: #4caf50;
+  --mma-green-dark: #3d9140;
+  --mma-blue-accent: #2196f3;
+  --mma-bg: #ffffff;
+  --mma-surface: #f5f7fa;
+  --mma-text: #333333;
+  --mma-text-muted: #6b7280;
+  --mma-warning: #f59e0b;
+  --mma-danger: #dc2626;
+  --radius-pill: 999px;
+  --shadow-card: 0 2px 12px rgba(27, 58, 95, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--mma-surface);
+  color: var(--mma-text);
+}
+
+body:has(app-shell.shell--layout-locked) {
+  overflow: hidden;
+}
+
+a { color: var(--mma-blue-accent); text-decoration: none; }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--mma-green);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: var(--mma-green-dark); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--mma-navy);
+  border: 2px solid var(--mma-navy);
+  border-radius: var(--radius-pill);
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--mma-danger, #c0392b);
+  border: 2px solid var(--mma-danger, #c0392b);
+  border-radius: var(--radius-pill);
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--mma-danger, #c0392b); color: #fff; }
+}
+
+.card {
+  background: var(--mma-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+}
+
+.badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-label {
+  font-size: 0.72rem;
+  color: var(--mma-text-muted);
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  &.ok { background: #e8f5e9; color: #2e7d32; }
+  &.warn { background: #fff8e1; color: #f57f17; }
+  &.danger { background: #ffebee; color: var(--mma-danger); }
+  &.info { background: #e3f2fd; color: var(--mma-navy); }
+}

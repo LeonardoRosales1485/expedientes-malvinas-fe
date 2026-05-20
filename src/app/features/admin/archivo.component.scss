@@ -1,0 +1,120 @@
+.page-title {
+  color: var(--mma-navy);
+  margin: 0 0 0.2rem;
+  font-size: 1.35rem;
+}
+
+.subtitle {
+  color: var(--mma-text-muted);
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+}
+
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mma-navy);
+
+  select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+}
+
+.filter-count {
+  font-size: 0.78rem;
+  color: var(--mma-text-muted);
+  align-self: flex-end;
+  padding-bottom: 0.1rem;
+}
+
+.table-wrap {
+  padding: 0;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.arch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th, td {
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: var(--mma-navy);
+    white-space: nowrap;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: var(--mma-text-muted);
+  padding: 1.5rem;
+}
+
+.badge-arch {
+  border-radius: 12px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-ARCHIVADO_PROVISORIO { background: #e0f2fe; color: #075985; }
+.badge-INTIMADO_1 { background: #fef3c7; color: #92400e; }
+.badge-INTIMADO_2 { background: #ffedd5; color: #9a3412; }
+.badge-CADUCADO { background: #fee2e2; color: #991b1b; }
+.badge-ARCHIVADO_DEFINITIVO { background: #d1fae5; color: #065f46; }
+.badge-EN_DESTRUCCION { background: #f3f4f6; color: #374151; }
+
+.link-ver {
+  font-size: 0.78rem;
+  color: var(--mma-navy);
+  text-decoration: underline;
+}
+
+.lifecycle-info {
+  padding: 1rem 1.25rem;
+
+  h2 {
+    font-size: 0.95rem;
+    color: var(--mma-navy);
+    margin: 0 0 0.75rem;
+  }
+
+  ol {
+    padding-left: 1.2rem;
+    margin: 0 0 0.75rem;
+    font-size: 0.82rem;
+    color: var(--mma-text-muted);
+    line-height: 1.8;
+  }
+}
+
+.lifecycle-note {
+  font-size: 0.75rem;
+  color: var(--mma-text-muted);
+  margin: 0;
+  font-style: italic;
+}
