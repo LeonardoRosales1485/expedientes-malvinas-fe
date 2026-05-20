@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
-  enableDemoLogin: false,
-  demoPassword: '',
+  enableDemoLogin: true,
+  demoPassword: 'demo123',
 };

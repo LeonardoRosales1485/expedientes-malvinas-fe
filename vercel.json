@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://expedientes-malvinas.onrender.com"
+      "destination": "https://expedientes-malvinas.onrender.com/api/:path*"
     }
   ]
 }
