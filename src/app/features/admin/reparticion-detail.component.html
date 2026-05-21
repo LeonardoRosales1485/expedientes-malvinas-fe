@@ -96,6 +96,9 @@
       Contraseña
       <input type="password" [(ngModel)]="deletePassword" autocomplete="off" />
     </label>
+    @if (deleteError) {
+      <p class="error dialog-error">{{ deleteError }}</p>
+    }
     <div class="dialog-actions">
       <button type="button" class="btn-secondary" (click)="closeDelete()">Cancelar</button>
       <button type="button" class="btn-danger" (click)="confirmDelete()">Eliminar</button>
