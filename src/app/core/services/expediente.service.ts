@@ -184,8 +184,8 @@ export class ReparticionService {
     return this.http.put<Reparticion>(`${this.base}/${id}`, body);
   }
 
-  eliminar(id: string, confirmPassword: string) {
-    return this.http.delete<void>(`${this.base}/${id}`, { params: { confirmPassword } });
+  eliminar(id: string) {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }
 

@@ -21,7 +21,6 @@ export class ReparticionDetailComponent implements OnInit {
   editing = false;
   editForm: Partial<Reparticion> = {};
   showDeleteDialog = false;
-  deletePassword = '';
   deleteError = '';
   error = '';
 
@@ -70,7 +69,6 @@ export class ReparticionDetailComponent implements OnInit {
   }
 
   openDelete(): void {
-    this.deletePassword = '';
     this.deleteError = '';
     this.showDeleteDialog = true;
     this.error = '';
@@ -78,14 +76,13 @@ export class ReparticionDetailComponent implements OnInit {
 
   closeDelete(): void {
     this.showDeleteDialog = false;
-    this.deletePassword = '';
     this.deleteError = '';
   }
 
   confirmDelete(): void {
     if (!this.detalle?.reparticion.id) return;
     this.deleteError = '';
-    this.reparticionService.eliminar(this.detalle.reparticion.id, this.deletePassword).subscribe({
+    this.reparticionService.eliminar(this.detalle.reparticion.id).subscribe({
       next: () => this.router.navigate(['/admin/reparticiones']),
       error: (e) => {
         this.deleteError =

@@ -91,11 +91,7 @@
   <div class="dialog-backdrop" (click)="closeDelete()"></div>
   <div class="dialog card" role="dialog">
     <h3>Eliminar repartición</h3>
-    <p>Esta acción es irreversible. Ingrese la contraseña de administrador para confirmar.</p>
-    <label>
-      Contraseña
-      <input type="password" [(ngModel)]="deletePassword" autocomplete="off" />
-    </label>
+    <p>Esta acción es irreversible. ¿Confirmás que querés eliminar <strong>{{ detalle?.reparticion.sigla }}</strong>?</p>
     @if (deleteError) {
       <p class="error dialog-error">{{ deleteError }}</p>
     }
