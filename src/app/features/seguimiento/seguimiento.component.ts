@@ -61,10 +61,10 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   load(): void {
     this.loading = true;
     this.expedienteService.listarPaginado(this.page, this.pageSize).subscribe({
-      next: (data) => {
-        const all = data.content;
-        this.totalPages = data.totalPages;
-        this.totalElements = data.totalElements;
+      next: (data: any) => {
+        const all: Expediente[] = Array.isArray(data) ? data : (data.content ?? []);
+        this.totalPages = Array.isArray(data) ? 1 : (data.totalPages ?? 1);
+        this.totalElements = Array.isArray(data) ? data.length : (data.totalElements ?? 0);
         this.loading = false;
         if (!this.filterReparticionId) {
           this.expedientes = all;
@@ -72,7 +72,7 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
         }
         const rid = this.filterReparticionId;
         this.expedientes = all.filter((exp) =>
-          exp.historialSteps.some((h) => h.reparticionId === rid),
+          exp.historialSteps?.some((h) => h.reparticionId === rid),
         );
       },
       error: () => (this.loading = false),

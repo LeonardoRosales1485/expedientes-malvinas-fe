@@ -55,10 +55,16 @@ export class BandejaComponent implements OnInit {
         vencimiento: this.filterVencimiento || undefined,
       })
       .subscribe({
-        next: (data) => {
-          this.allTareas.set(data.content);
-          this.totalPages = data.totalPages;
-          this.totalElements = data.totalElements;
+        next: (data: any) => {
+          if (Array.isArray(data)) {
+            this.allTareas.set(data);
+            this.totalPages = 1;
+            this.totalElements = data.length;
+          } else {
+            this.allTareas.set(data.content ?? []);
+            this.totalPages = data.totalPages ?? 1;
+            this.totalElements = data.totalElements ?? 0;
+          }
           this.loading = false;
         },
         error: () => (this.loading = false),

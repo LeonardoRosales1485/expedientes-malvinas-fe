@@ -26,9 +26,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   /** true durante los primeros 2s mientras se espera respuesta del servidor */
   checkingServer = true;
-  /** true mientras corre el contador de 65s de warm-up */
+  /** true mientras corre el contador de 95s de warm-up */
   serverWaking = false;
-  wakeCountdown = 65;
+  wakeCountdown = 95;
   private wakeInterval: ReturnType<typeof setInterval> | null = null;
   private checkTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -68,7 +68,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   wakeServer(): void {
     this.serverWaking = true;
-    this.wakeCountdown = 65;
+    this.wakeCountdown = 95;
 
     const tryFetch = () => {
       this.auth.listDemoUsers().subscribe({
