@@ -185,7 +185,7 @@ export class ReparticionService {
   }
 
   eliminar(id: string) {
-    return this.http.delete<void>(`${this.base}/${id}`);
+    return this.http.post<void>(`${this.base}/${id}/eliminar`, {});
   }
 }
 
