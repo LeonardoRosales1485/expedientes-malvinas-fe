@@ -1,0 +1,104 @@
+.diagrama {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 1rem 0;
+}
+
+.nodo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 80px;
+  max-width: 120px;
+  padding: 0.5rem 0.4rem;
+  border-radius: 10px;
+  border: 2px solid #d1d5db;
+  background: #f9fafb;
+  text-align: center;
+  transition: transform 100ms ease;
+
+  &--active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  &--done {
+    border-color: #22c55e;
+    background: #f0fdf4;
+  }
+
+  &--returned {
+    border-color: #f59e0b;
+    background: #fffbeb;
+  }
+
+  &--expired {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  &--pending {
+    opacity: 0.55;
+  }
+}
+
+.nodo-icono {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.nodo-nombre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.nodo-estado {
+  font-size: 0.65rem;
+  color: #6b7280;
+}
+
+.nodo-dias {
+  font-size: 0.6rem;
+  color: #9ca3af;
+}
+
+.conector {
+  display: flex;
+  align-items: center;
+  padding-top: 1.5rem;
+  color: #9ca3af;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+
+  &--salto {
+    color: #f59e0b;
+    font-style: italic;
+  }
+}
+
+/* Vertical en móvil */
+@media (max-width: 600px) {
+  .diagrama {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nodo {
+    flex-direction: row;
+    max-width: none;
+    text-align: left;
+    gap: 0.75rem;
+  }
+
+  .conector {
+    padding: 0 0 0 1.5rem;
+    transform: rotate(90deg);
+    align-self: flex-start;
+  }
+}

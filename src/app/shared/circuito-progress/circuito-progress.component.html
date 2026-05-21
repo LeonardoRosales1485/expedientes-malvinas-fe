@@ -1,0 +1,17 @@
+<div class="diagrama">
+  @for (nodo of nodos; track nodo.paso.order; let last = $last) {
+    <div class="nodo" [class]="'nodo--' + nodo.estadoClase">
+      <div class="nodo-icono">{{ tipoIcono(nodo.paso.tipoAccion) }}</div>
+      <div class="nodo-info">
+        <span class="nodo-nombre">{{ nodo.paso.nombre }}</span>
+        <span class="nodo-estado">{{ nodo.etiquetaEstado }}</span>
+        @if (nodo.historial.length && nodo.historial[nodo.historial.length - 1].diasTranscurridos !== undefined) {
+          <span class="nodo-dias">{{ nodo.historial[nodo.historial.length - 1].diasTranscurridos }} d. hábiles</span>
+        }
+      </div>
+    </div>
+    @if (!last) {
+      <div class="conector" [class.conector--salto]="nodo.paso.siguienteStep !== null && nodo.paso.siguienteStep !== nodo.paso.order + 1">›</div>
+    }
+  }
+</div>

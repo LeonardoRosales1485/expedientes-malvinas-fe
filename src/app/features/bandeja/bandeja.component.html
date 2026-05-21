@@ -4,7 +4,7 @@
 <div class="filters card">
   <label>
     Circuito administrativo
-    <select [(ngModel)]="filterCircuito" (ngModelChange)="load()">
+    <select [(ngModel)]="filterCircuito" (ngModelChange)="onFilterChange()">
       <option value="">Todos</option>
       @for (c of circuitos; track c.id) {
         <option [value]="c.id">{{ c.nombre }}</option>
@@ -13,7 +13,7 @@
   </label>
   <label>
     Estado
-    <select [(ngModel)]="filterEstado" (ngModelChange)="load()">
+    <select [(ngModel)]="filterEstado" (ngModelChange)="onFilterChange()">
       <option value="">Todos</option>
       <option value="EN_ANALISIS_TECNICO">En análisis</option>
       <option value="PENDIENTE_FIRMA">Pendiente firma</option>
@@ -23,7 +23,7 @@
   </label>
   <label>
     Vencimiento
-    <select [(ngModel)]="filterVencimiento" (ngModelChange)="load()">
+    <select [(ngModel)]="filterVencimiento" (ngModelChange)="onFilterChange()">
       <option value="">Todos</option>
       <option value="enPlazo">En plazo</option>
       <option value="proximoVencer">Próximo a vencer</option>
@@ -56,4 +56,9 @@
       </article>
     }
   </div>
+  <app-paginator
+    [page]="page"
+    [totalPages]="totalPages"
+    [totalElements]="totalElements"
+    (pageChange)="onPageChange($event)" />
 }

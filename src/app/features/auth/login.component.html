@@ -23,7 +23,7 @@
             <button type="button" class="btn-wake" disabled>
               Iniciando servidor… {{ wakeCountdown }}s
             </button>
-            <p class="demo-hint">El servidor tarda ~30 s en despertar.</p>
+            <p class="demo-hint">El servidor tarda ~60 s en despertar. La página se recargará automáticamente.</p>
           } @else {
             <button type="button" class="btn-wake" (click)="wakeServer()">
               ⚡ Pre-iniciar servidor
@@ -68,6 +68,7 @@
           </button>
         </form>
 
+        <p class="register-link">¿Olvidaste tu contraseña? <a routerLink="/recuperar-contrasena">Recuperar acceso</a></p>
         <p class="register-link">¿Es vecino? <a routerLink="/registro-ciudadano">Registrarse como ciudadano</a></p>
 
         @if (showDemoLogin && demoUsers.length > 0) {

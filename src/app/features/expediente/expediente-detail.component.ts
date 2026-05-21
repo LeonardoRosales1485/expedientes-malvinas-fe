@@ -17,12 +17,13 @@ import { LayoutStateService } from '../../core/services/layout-state.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { ActoAdministrativo, CircuitoAdministrativo, Expediente, HistorialStep, PlantillaActo, Reparticion } from '../../core/models';
 import { TaskExecutionComponent } from './task-execution.component';
+import { CircuitoProgressComponent } from '../../shared/circuito-progress/circuito-progress.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-expediente-detail',
   standalone: true,
-  imports: [RouterLink, TaskExecutionComponent, DatePipe, FormsModule, EstadoLabelPipe],
+  imports: [RouterLink, TaskExecutionComponent, DatePipe, FormsModule, EstadoLabelPipe, CircuitoProgressComponent],
   templateUrl: './expediente-detail.component.html',
   styleUrl: './expediente-detail.component.scss',
 })
@@ -45,7 +46,7 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
   reparticiones: Reparticion[] = [];
   stepConfig: Record<string, unknown> | undefined;
   archivos: FileMetadata[] = [];
-  activeTab: 'historial' | 'documentos' | 'datos' | 'actos' = 'historial';
+  activeTab: 'historial' | 'documentos' | 'datos' | 'actos' | 'diagrama' = 'historial';
   actionError = '';
   completing = false;
 
@@ -153,6 +154,17 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
     const obs = prompt('Motivo del rechazo (opcional):') ?? '';
     this.actoService.rechazar(acto.id, obs).subscribe((updated) => {
       this.actos = this.actos.map((a) => (a.id === updated.id ? updated : a));
+    });
+  }
+
+  exportarPdf(): void {
+    if (!this.expediente) return;
+    this.expedienteService.exportarPdf(this.expediente.id).subscribe((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob as Blob);
+      a.download = `expediente-${this.expediente!.numeroExpediente}.pdf`;
+      a.click();
+      URL.revokeObjectURL(a.href);
     });
   }
 

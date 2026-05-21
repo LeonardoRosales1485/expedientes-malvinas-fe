@@ -94,7 +94,8 @@
               }
             </select>
           </label>
-          <label>Plazo (días) <input type="number" [(ngModel)]="step.plazoDias" min="1" /></label>
+          <label>Plazo (días hábiles) <input type="number" [(ngModel)]="step.plazoDias" min="1" /></label>
+          <label>Tolerancia de vencimiento (%) <input type="number" [(ngModel)]="step.toleranciaPorcentaje" min="0" max="200" placeholder="50" /></label>
           <label>Siguiente paso (orden) <input type="number" [(ngModel)]="step.siguienteStep" /></label>
 
           @if (step.tipoAccion === 'APPROVAL') {

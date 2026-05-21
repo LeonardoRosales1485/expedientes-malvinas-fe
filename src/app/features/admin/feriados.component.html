@@ -1,0 +1,51 @@
+<h1 class="page-title">Feriados nacionales</h1>
+<p class="subtitle">Define los días no hábiles para el cálculo correcto de plazos (Decreto 2239/21)</p>
+
+@if (error) { <p class="error">{{ error }}</p> }
+
+<div class="filters card">
+  <label>
+    Año
+    <input type="number" [(ngModel)]="anio" [min]="2024" [max]="2030" (change)="load()" style="width:100px" />
+  </label>
+</div>
+
+<div class="card form-card">
+  <h3>Agregar feriado</h3>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end">
+    <label>
+      Fecha
+      <input type="date" [(ngModel)]="nuevaFecha" />
+    </label>
+    <label style="flex:1; min-width:200px">
+      Descripción
+      <input type="text" [(ngModel)]="nuevaDescripcion" placeholder="Ej: Día del Trabajador" />
+    </label>
+    <button type="button" class="btn-primary" (click)="agregar()" [disabled]="!nuevaFecha">Agregar</button>
+  </div>
+</div>
+
+@if (loading) {
+  <p>Cargando...</p>
+} @else if (feriados.length === 0) {
+  <div class="card empty">No hay feriados cargados para {{ anio }}.</div>
+} @else {
+  <div class="table-scroll card">
+    <table class="table">
+      <thead>
+        <tr><th>Fecha</th><th>Descripción</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (f of feriados; track f.id) {
+          <tr>
+            <td>{{ f.fecha }}</td>
+            <td>{{ f.descripcion || '—' }}</td>
+            <td class="row-actions">
+              <button type="button" class="btn-secondary small" (click)="eliminar(f)">Eliminar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

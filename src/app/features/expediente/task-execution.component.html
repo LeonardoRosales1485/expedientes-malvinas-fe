@@ -69,14 +69,30 @@
       </button>
     }
     @case ('APPROVAL') {
-      @if (editMode && yaAprobo) {
+      @let aprobacionesNecesarias = ($any(configuracion)?.['aprobacionesNecesarias'] ?? 1);
+      @if ((step.aprobaciones?.length ?? 0) > 0) {
+        <div class="aprobaciones-info">
+          <p class="aprobaciones-contador">
+            <strong>{{ step.aprobaciones?.length }} de {{ aprobacionesNecesarias }}</strong> aprobaciones registradas
+          </p>
+          <ul class="aprobaciones-lista">
+            @for (ap of step.aprobaciones ?? []; track ap.usuarioId) {
+              <li>
+                <span class="ap-nombre">{{ ap.nombreUsuario }}</span>
+                @if (ap.comentario) { <span class="ap-comentario">— {{ ap.comentario }}</span> }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+      @if (yaAprobo) {
         <p class="hint">Ya registró su aprobación en este paso.</p>
       } @else {
         <label>
           Comentario (opcional)
           <textarea [(ngModel)]="comentario" rows="3"></textarea>
         </label>
-        <button type="button" class="btn-primary" (click)="editMode ? submitEdit() : submitApproval()">
+        <button type="button" class="btn-primary" [disabled]="yaAprobo" (click)="editMode ? submitEdit() : submitApproval()">
           {{ editMode ? 'Registrar aprobación ›' : 'Aprobar ›' }}
         </button>
       }

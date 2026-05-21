@@ -8,12 +8,14 @@
   </div>
 }
 
-@if (expedientes.length === 0) {
+@if (loading) {
+  <p>Cargando...</p>
+} @else if (expedientes.length === 0) {
   <p class="empty">No hay expedientes para mostrar.</p>
 } @else {
   <div class="filters card">
     <label>
-      Buscar
+      Buscar en esta página
       <input type="search" [(ngModel)]="searchText" placeholder="N° expediente, tipo de trámite u objeto…" />
     </label>
   </div>
@@ -29,6 +31,11 @@
             [selected]="isSelected(exp.id)"
             (selectExpediente)="selectExpediente(exp.id)" />
         }
+        <app-paginator
+          [page]="page"
+          [totalPages]="totalPages"
+          [totalElements]="totalElements"
+          (pageChange)="onPageChange($event)" />
       </aside>
       <section class="seg-detail-col" aria-label="Detalle del expediente">
         @if (selected) {

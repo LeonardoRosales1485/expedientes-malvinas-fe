@@ -19,6 +19,31 @@
     </div>
   </div>
 
+  <div class="sidebar-search">
+    <input
+      type="search"
+      class="search-input"
+      [(ngModel)]="searchText"
+      (ngModelChange)="onSearchInput($event)"
+      (focus)="showSearch = true"
+      placeholder="Buscar expediente…"
+      autocomplete="off" />
+    @if (showSearch && searchText.trim().length >= 2) {
+      <div class="search-dropdown">
+        @if (searchResults.length === 0) {
+          <p class="search-empty">Sin resultados</p>
+        } @else {
+          @for (exp of searchResults; track exp.id) {
+            <button type="button" class="search-item" (click)="navigateToExpediente(exp.id)">
+              <span class="search-num">{{ exp.numeroExpediente }}</span>
+              <span class="search-obj">{{ exp.caratula.objeto }}</span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
   <nav class="sidebar-nav">
     <a routerLink="/bandeja" routerLinkActive="active" (click)="closeSidebar()">
       <span class="nav-icon">📋</span>
@@ -63,6 +88,10 @@
         <a routerLink="/admin/plantillas" routerLinkActive="active" (click)="closeSidebar()">
           <span class="nav-icon">📝</span>
           <span class="sidebar-label">Plantillas</span>
+        </a>
+        <a routerLink="/admin/feriados" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">📅</span>
+          <span class="sidebar-label">Feriados</span>
         </a>
       }
       <a routerLink="/admin/usuarios" routerLinkActive="active" (click)="closeSidebar()">

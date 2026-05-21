@@ -26,9 +26,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   /** true durante los primeros 2s mientras se espera respuesta del servidor */
   checkingServer = true;
-  /** true mientras corre el contador de 40s de warm-up */
+  /** true mientras corre el contador de 65s de warm-up */
   serverWaking = false;
-  wakeCountdown = 40;
+  wakeCountdown = 65;
   private wakeInterval: ReturnType<typeof setInterval> | null = null;
   private checkTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -68,27 +68,31 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   wakeServer(): void {
     this.serverWaking = true;
-    this.wakeCountdown = 40;
+    this.wakeCountdown = 65;
 
-    // Lanzar petición para despertar Render
-    this.auth.listDemoUsers().subscribe({
-      next: (users) => {
-        this.demoUsers = users;
-        this.stopWaking();
-      },
-      error: () => {},
-    });
+    const tryFetch = () => {
+      this.auth.listDemoUsers().subscribe({
+        next: (users) => {
+          this.demoUsers = users;
+          this.stopWaking();
+        },
+        error: () => {},
+      });
+    };
 
-    // Contador regresivo de 40 segundos
+    // Primer intento inmediato
+    tryFetch();
+
+    // Contador regresivo: reintenta cada 8 s; al llegar a 0 recarga la página
     this.wakeInterval = setInterval(() => {
       this.wakeCountdown--;
       if (this.wakeCountdown <= 0) {
         this.stopWaking();
-        // Último intento al finalizar el contador
-        this.auth.listDemoUsers().subscribe({
-          next: (users) => (this.demoUsers = users),
-          error: () => {},
-        });
+        window.location.reload();
+        return;
+      }
+      if (this.wakeCountdown % 8 === 0) {
+        tryFetch();
       }
     }, 1000);
   }

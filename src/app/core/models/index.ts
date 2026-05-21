@@ -62,6 +62,7 @@ export interface PasoCircuito {
   reparticionId: string;
   tipoAccion: TipoAccion;
   plazoDias: number;
+  toleranciaPorcentaje?: number;
   configuracion?: Record<string, unknown>;
   siguienteStep?: number | null;
 }

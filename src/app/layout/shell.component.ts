@@ -1,18 +1,19 @@
 import { Component, HostBinding, OnDestroy, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { interval, Subscription } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { Subject, interval, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import { AuthService } from '../core/services/auth.service';
 import { PermissionService } from '../core/services/permission.service';
 import { LayoutStateService } from '../core/services/layout-state.service';
-import { NotificationService, ReparticionService } from '../core/services/expediente.service';
-import { Notification, Reparticion } from '../core/models';
+import { ExpedienteService, NotificationService, ReparticionService } from '../core/services/expediente.service';
+import { Expediente, Notification, Reparticion } from '../core/models';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe, FormsModule],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -22,6 +23,7 @@ export class ShellComponent implements OnInit, OnDestroy {
   readonly layoutState = inject(LayoutStateService);
   private readonly notificationService = inject(NotificationService);
   private readonly reparticionService = inject(ReparticionService);
+  private readonly expedienteService = inject(ExpedienteService);
   private readonly router = inject(Router);
 
   @HostBinding('class.shell--circuito-editor')
@@ -42,8 +44,13 @@ export class ShellComponent implements OnInit, OnDestroy {
   userReparticiones: Reparticion[] = [];
   showPanel = false;
   sidebarOpen = false;
+  searchText = '';
+  searchResults: Expediente[] = [];
+  showSearch = false;
   private pollSub?: Subscription;
   private routerSub?: Subscription;
+  private searchSub?: Subscription;
+  private readonly searchInput$ = new Subject<string>();
 
   ngOnInit(): void {
     this.loadNotifications();
@@ -57,12 +64,24 @@ export class ShellComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.sidebarOpen = false;
         this.showPanel = false;
+        this.closeSearch();
       });
+
+    this.searchSub = this.searchInput$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+    ).subscribe((q) => {
+      if (q.trim().length < 2) { this.searchResults = []; return; }
+      this.expedienteService.buscar(q).subscribe((r) => {
+        this.searchResults = r.slice(0, 8);
+      });
+    });
   }
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
     this.routerSub?.unsubscribe();
+    this.searchSub?.unsubscribe();
   }
 
   loadUserReparticiones(): void {
@@ -107,6 +126,22 @@ export class ShellComponent implements OnInit, OnDestroy {
     this.notificationService.marcarLeida(n.id).subscribe(() => {
       n.leida = true;
     });
+  }
+
+  onSearchInput(q: string): void {
+    this.showSearch = true;
+    this.searchInput$.next(q);
+  }
+
+  closeSearch(): void {
+    this.showSearch = false;
+    this.searchText = '';
+    this.searchResults = [];
+  }
+
+  navigateToExpediente(id: string): void {
+    this.closeSearch();
+    this.router.navigate(['/expedientes', id]);
   }
 
   logout(): void {

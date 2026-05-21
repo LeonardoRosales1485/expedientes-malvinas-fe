@@ -13,6 +13,14 @@ import {
   Role,
 } from '../models';
 
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}
+
 export interface FileMetadata {
   id: string;
   expedienteId: string;
@@ -21,6 +29,11 @@ export interface FileMetadata {
   mimeType?: string;
   tamano: number;
   fechaSubida?: string;
+}
+
+export interface DomicilioElectronico {
+  email?: string;
+  whatsapp?: string;
 }
 
 export interface UserAdmin {
@@ -32,6 +45,7 @@ export interface UserAdmin {
   roles: Role[];
   activo: boolean;
   esJefeDeArea: boolean;
+  domicilioElectronico?: DomicilioElectronico;
 }
 
 export interface UserForm {
@@ -42,6 +56,7 @@ export interface UserForm {
   reparticionesIds: string[];
   roles: Role[];
   esJefeDeArea?: boolean;
+  domicilioElectronico?: DomicilioElectronico;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -55,12 +70,36 @@ export class ExpedienteService {
     return this.http.get<Expediente[]>(`${this.base}${q}`);
   }
 
+  listarPaginado(page: number, size = 20, estado?: string) {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (estado) params = params.set('estado', estado);
+    return this.http.get<PageResponse<Expediente>>(this.base, { params });
+  }
+
   bandeja(filters?: { circuitoId?: string; estado?: string; vencimiento?: string }) {
     let params = new HttpParams();
     if (filters?.circuitoId) params = params.set('circuitoId', filters.circuitoId);
     if (filters?.estado) params = params.set('estado', filters.estado);
     if (filters?.vencimiento) params = params.set('vencimiento', filters.vencimiento);
     return this.http.get<Expediente[]>(`${this.base}/tareas-pendientes`, { params });
+  }
+
+  bandejaPaginado(page: number, size = 20, filters?: { circuitoId?: string; estado?: string; vencimiento?: string }) {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (filters?.circuitoId) params = params.set('circuitoId', filters.circuitoId);
+    if (filters?.estado) params = params.set('estado', filters.estado);
+    if (filters?.vencimiento) params = params.set('vencimiento', filters.vencimiento);
+    return this.http.get<PageResponse<Expediente>>(`${this.base}/tareas-pendientes`, { params });
+  }
+
+  buscar(q: string, estado?: string) {
+    let params = new HttpParams().set('q', q);
+    if (estado) params = params.set('estado', estado);
+    return this.http.get<Expediente[]>(`${this.base}/buscar`, { params });
+  }
+
+  exportarPdf(id: string) {
+    return this.http.get(`${this.base}/${id}/pdf`, { responseType: 'blob' });
   }
 
   obtener(id: string) {

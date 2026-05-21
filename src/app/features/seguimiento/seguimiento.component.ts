@@ -7,6 +7,7 @@ import { Expediente } from '../../core/models';
 import { SeguimientoDetailPanelComponent } from './seguimiento-detail-panel.component';
 import { SeguimientoExpedienteCardComponent } from './seguimiento-expediente-card.component';
 import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.component';
+import { PaginatorComponent } from '../../shared/paginator/paginator.component';
 
 @Component({
   selector: 'app-seguimiento',
@@ -17,6 +18,7 @@ import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.compo
     SeguimientoPlaceholderComponent,
     RouterLink,
     FormsModule,
+    PaginatorComponent,
   ],
   templateUrl: './seguimiento.component.html',
   styleUrl: './seguimiento.component.scss',
@@ -26,11 +28,15 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   private readonly layoutState = inject(LayoutStateService);
   private readonly route = inject(ActivatedRoute);
 
-  private allExpedientes: Expediente[] = [];
   expedientes: Expediente[] = [];
   selectedId: string | null = null;
   filterReparticionId: string | null = null;
   searchText = '';
+  page = 0;
+  totalPages = 1;
+  totalElements = 0;
+  readonly pageSize = 20;
+  loading = false;
 
   get filteredExpedientes(): Expediente[] {
     const q = this.searchText.toLowerCase().trim();
@@ -45,30 +51,42 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.layoutState.setSeguimientoLayout(true);
     this.filterReparticionId = this.route.snapshot.queryParamMap.get('reparticionId');
-    this.expedienteService.listar().subscribe((e) => {
-      this.allExpedientes = e;
-      this.applyFilter();
-    });
+    this.load();
   }
 
   ngOnDestroy(): void {
     this.layoutState.setSeguimientoLayout(false);
   }
 
-  private applyFilter(): void {
-    if (!this.filterReparticionId) {
-      this.expedientes = this.allExpedientes;
-      return;
-    }
-    const rid = this.filterReparticionId;
-    this.expedientes = this.allExpedientes.filter((exp) =>
-      exp.historialSteps.some((h) => h.reparticionId === rid),
-    );
+  load(): void {
+    this.loading = true;
+    this.expedienteService.listarPaginado(this.page, this.pageSize).subscribe({
+      next: (data) => {
+        const all = data.content;
+        this.totalPages = data.totalPages;
+        this.totalElements = data.totalElements;
+        this.loading = false;
+        if (!this.filterReparticionId) {
+          this.expedientes = all;
+          return;
+        }
+        const rid = this.filterReparticionId;
+        this.expedientes = all.filter((exp) =>
+          exp.historialSteps.some((h) => h.reparticionId === rid),
+        );
+      },
+      error: () => (this.loading = false),
+    });
+  }
+
+  onPageChange(p: number): void {
+    this.page = p;
+    this.load();
   }
 
   clearFilter(): void {
     this.filterReparticionId = null;
-    this.expedientes = this.allExpedientes;
+    this.load();
   }
 
   get selected(): Expediente | null {

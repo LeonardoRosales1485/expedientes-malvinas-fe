@@ -50,6 +50,19 @@
         Jefe de área (puede crear/editar usuarios de su repartición)
       </label>
     }
+    <fieldset>
+      <legend>Contacto para notificaciones</legend>
+      <label>
+        Email de notificaciones
+        <input type="email" [(ngModel)]="editing.domicilioElectronico!.email" name="domEmail"
+               placeholder="usuario@municipio.gob.ar" />
+      </label>
+      <label>
+        WhatsApp (con código de país)
+        <input type="tel" [(ngModel)]="editing.domicilioElectronico!.whatsapp" name="domWhatsapp"
+               placeholder="+549XXXXXXXXXX" />
+      </label>
+    </fieldset>
     <div class="actions">
       <button type="button" class="btn-primary" (click)="guardar()">Guardar</button>
       <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>

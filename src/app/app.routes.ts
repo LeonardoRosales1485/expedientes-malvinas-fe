@@ -9,6 +9,8 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'registro-ciudadano', loadComponent: () => import('./features/auth/registro-ciudadano.component').then(m => m.RegistroCiudadanoComponent) },
+  { path: 'recuperar-contrasena', loadComponent: () => import('./features/auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+  { path: 'reset-contrasena', loadComponent: () => import('./features/auth/reset-password.component').then(m => m.ResetPasswordComponent) },
   {
     path: '',
     canActivate: [authGuard],
@@ -31,6 +33,7 @@ export const routes: Routes = [
       { path: 'admin/reportes', canActivate: [adminGuard], loadComponent: () => import('./features/admin/reportes.component').then(m => m.ReportesComponent) },
       { path: 'admin/archivo', canActivate: [adminGuard], loadComponent: () => import('./features/admin/archivo.component').then(m => m.ArchivoComponent) },
       { path: 'admin/plantillas', canActivate: [adminGuard], loadComponent: () => import('./features/admin/plantillas.component').then(m => m.PlantillasComponent) },
+      { path: 'admin/feriados', canActivate: [adminGuard], loadComponent: () => import('./features/admin/feriados.component').then(m => m.FeriadosComponent) },
     ],
   },
   { path: '**', redirectTo: 'bandeja' },

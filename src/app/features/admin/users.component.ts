@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ALL_ROLES, roleLabel } from '../../core/constants/role-labels';
 import { AuthService } from '../../core/services/auth.service';
-import { ReparticionService, UserAdmin, UserAdminService, UserForm } from '../../core/services/expediente.service';
+import { DomicilioElectronico, ReparticionService, UserAdmin, UserAdminService, UserForm } from '../../core/services/expediente.service';
 import { Reparticion, Role } from '../../core/models';
 
 @Component({
@@ -19,7 +19,7 @@ export class UsersComponent implements OnInit {
 
   users: UserAdmin[] = [];
   reparticiones: Reparticion[] = [];
-  editing: UserForm & { id?: string; esJefeDeArea?: boolean } | null = null;
+  editing: UserForm & { id?: string; esJefeDeArea?: boolean; domicilioElectronico?: DomicilioElectronico } | null = null;
   error = '';
   allRoles = ALL_ROLES;
   roleLabel = roleLabel;
@@ -54,6 +54,7 @@ export class UsersComponent implements OnInit {
       apellido: '',
       reparticionesIds: [],
       roles: ['USER'],
+      domicilioElectronico: { email: '', whatsapp: '' },
     };
     this.error = '';
   }
@@ -67,6 +68,10 @@ export class UsersComponent implements OnInit {
       reparticionesIds: [...u.reparticionesIds],
       roles: [...u.roles],
       esJefeDeArea: u.esJefeDeArea,
+      domicilioElectronico: {
+        email: u.domicilioElectronico?.email ?? '',
+        whatsapp: u.domicilioElectronico?.whatsapp ?? '',
+      },
     };
     this.error = '';
   }
@@ -124,6 +129,7 @@ export class UsersComponent implements OnInit {
       reparticionesIds: this.editing.reparticionesIds,
       roles: this.editing.roles,
       esJefeDeArea: this.editing.esJefeDeArea,
+      domicilioElectronico: this.editing.domicilioElectronico,
     };
     const req = this.editing.id
       ? this.userService.actualizar(this.editing.id, body)

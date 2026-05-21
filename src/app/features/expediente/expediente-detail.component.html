@@ -22,6 +22,9 @@
               }
             </div>
           </div>
+          <button type="button" class="btn-secondary small" style="margin-top:0.5rem" (click)="exportarPdf()">
+            ⬇ Exportar PDF
+          </button>
         </div>
         <div class="tabs" role="tablist" aria-label="Secciones del expediente">
           <button
@@ -59,6 +62,15 @@
             (click)="activeTab = 'actos'; cargarActos()"
           >
             Actos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [class.active]="activeTab === 'diagrama'"
+            [attr.aria-selected]="activeTab === 'diagrama'"
+            (click)="activeTab = 'diagrama'"
+          >
+            Diagrama
           </button>
         </div>
       </div>
@@ -244,6 +256,16 @@
                   </div>
                 }
               </div>
+            }
+          </div>
+        }
+        @if (activeTab === 'diagrama') {
+          <div class="diagrama-panel">
+            <h2 class="hs-heading">Recorrido del expediente</h2>
+            @if (circuito) {
+              <app-circuito-progress [circuito]="circuito" [expediente]="expediente" />
+            } @else {
+              <p class="empty">Cargando circuito…</p>
             }
           </div>
         }
