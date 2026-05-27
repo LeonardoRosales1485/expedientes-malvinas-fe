@@ -16,7 +16,7 @@
   </div>
 
   @if (loading) {
-    <app-loading-spinner message="Cargando tipos de expediente..." />
+    <app-loading-spinner />
   }
 
   <form [formGroup]="form" (ngSubmit)="submit()">
