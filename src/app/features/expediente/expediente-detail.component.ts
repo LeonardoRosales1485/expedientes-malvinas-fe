@@ -514,7 +514,7 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
     const user = this.auth.currentUser();
     const reps = user?.reparticionesIds ?? [];
     const tieneRep = (this.expediente.firmasRequeridas ?? []).some((f) => reps.includes(f.reparticionId));
-    const yaFirmo = (this.expediente.firmasExpediente ?? []).some((f) => f.usuarioId === user?.id);
+    const yaFirmo = (this.expediente.firmasExpediente ?? []).some((f) => f.usuarioId === user?.userId);
     return tieneRep && !yaFirmo;
   }
 
