@@ -10,6 +10,7 @@ import { FormFieldDef } from '../../core/models';
 })
 export class CircuitoStepPreviewComponent {
   @Input({ required: true }) fields!: FormFieldDef[];
+  @Input() requiereFirma = false;
 
   readonly textMaxLength = TEXT_MAX_LENGTH;
   formFieldTypeLabel = formFieldTypeLabel;

@@ -1,0 +1,121 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal-box" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title" class="modal-title">Agregar actuación</h2>
+
+    @if (!tipo) {
+      <p class="modal-subtitle">¿Qué tipo de actuación querés agregar?</p>
+      <div class="tipo-grid">
+        <button type="button" class="tipo-card" (click)="elegirTipo('ACTA')">
+          <span class="tipo-icon">📄</span>
+          <strong>Acta</strong>
+          <small>Texto libre, con o sin plantilla</small>
+        </button>
+        <button type="button" class="tipo-card" (click)="elegirTipo('HOJA')">
+          <span class="tipo-icon">📋</span>
+          <strong>Hoja de expediente</strong>
+          <small>Formulario estructurado, con o sin plantilla</small>
+        </button>
+      </div>
+    }
+
+    @if (tipo === 'ACTA') {
+      <div class="modal-section">
+        <label class="field-label">Plantilla (opcional)</label>
+        <select class="field-select" [(ngModel)]="plantillaSeleccionadaId" (ngModelChange)="onPlantillaChange()">
+          <option value="">— En blanco —</option>
+          @for (p of plantillas; track p.id) {
+            <option [value]="p.id">{{ p.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="modal-section">
+        <label class="field-label">Título <span class="req">*</span></label>
+        <input class="field-input" type="text" [(ngModel)]="tituloActa" placeholder="Ej: Acta de constatación N° 1" />
+      </div>
+
+      <div class="modal-section editor-section">
+        <label class="field-label">Contenido</label>
+        <div #quillContainer class="quill-wrap"></div>
+      </div>
+    }
+
+    @if (tipo === 'HOJA') {
+      <div class="modal-section">
+        <label class="field-label">Título <span class="req">*</span></label>
+        <input class="field-input" type="text" [(ngModel)]="tituloHoja" placeholder="Ej: Informe técnico complementario" />
+      </div>
+
+      <div class="modal-section">
+        <label class="field-label">Plantilla de formulario</label>
+        <select class="field-select" [(ngModel)]="formularioSeleccionadoId" (ngModelChange)="onFormularioChange()">
+          <option value="">— Sin plantilla (personalizado) —</option>
+          @for (f of formularios; track f.id) {
+            <option [value]="f.id">{{ f.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      @if (formularioSeleccionadoId && !formularioPersonalizado) {
+        <div class="modal-section campos-section">
+          @for (campo of camposFormulario(formularioSeleccionado); track campo.nombre) {
+            <div class="campo-row">
+              <label class="campo-label">{{ campo.nombre }}</label>
+              @if (campo.tipo === 'textarea') {
+                <textarea class="field-input" [(ngModel)]="valoresFormulario[campo.nombre]" rows="3"></textarea>
+              } @else if (campo.tipo === 'select' && campo.opciones) {
+                <select class="field-select" [(ngModel)]="valoresFormulario[campo.nombre]">
+                  <option value="">Seleccionar...</option>
+                  @for (op of campo.opciones; track op) {
+                    <option [value]="op">{{ op }}</option>
+                  }
+                </select>
+              } @else {
+                <input class="field-input" type="text" [(ngModel)]="valoresFormulario[campo.nombre]" />
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (!formularioSeleccionadoId || formularioPersonalizado) {
+        <div class="modal-section">
+          <p class="campos-hint">Definí los campos de tu formulario personalizado:</p>
+          @for (campo of camposPersonalizados; track $index; let i = $index) {
+            <div class="campo-personalizado-row">
+              <input class="field-input campo-nombre" type="text" [(ngModel)]="campo.nombre" placeholder="Nombre del campo" />
+              <input class="field-input campo-valor" type="text" [(ngModel)]="campo.valor" placeholder="Valor" />
+              @if (camposPersonalizados.length > 1) {
+                <button type="button" class="btn-remove-campo" (click)="eliminarCampo(i)" title="Eliminar campo">&times;</button>
+              }
+            </div>
+          }
+          <button type="button" class="btn-add-campo" (click)="agregarCampo()">+ Agregar campo</button>
+        </div>
+      }
+    }
+
+    @if (error) {
+      <p class="modal-error">{{ error }}</p>
+    }
+
+    <div class="modal-actions">
+      @if (tipo) {
+        <button type="button" class="btn-link" (click)="volver()">‹ Cambiar tipo</button>
+      }
+      <div class="modal-actions-right">
+        <button type="button" class="btn-secondary" (click)="cerrar()">Cancelar</button>
+        @if (tipo) {
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="!puedeGuardar() || guardando"
+            (click)="guardar()"
+          >
+            {{ guardando ? 'Guardando...' : 'Guardar actuación' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,12 +6,23 @@ import {
   AuditLogEntry,
   CircuitoAdministrativo,
   Expediente,
+  FormularioPredefinido,
   Notification,
   PlantillaActo,
   Reparticion,
   ReparticionDetalle,
   Role,
 } from '../models';
+
+export interface AgregarActuacionBody {
+  tipo: 'ACTA' | 'HOJA';
+  titulo?: string;
+  contenidoHtml?: string;
+  datosFormulario?: Record<string, unknown>;
+  camposDefinicion?: Record<string, unknown>[];
+  plantillaId?: string;
+  plantillaNombre?: string;
+}
 
 export interface PageResponse<T> {
   content: T[];
@@ -70,9 +81,10 @@ export class ExpedienteService {
     return this.http.get<Expediente[]>(`${this.base}${q}`);
   }
 
-  listarPaginado(page: number, size = 20, estado?: string) {
+  listarPaginado(page: number, size = 20, estado?: string, tipo?: string) {
     let params = new HttpParams().set('page', page).set('size', size);
     if (estado) params = params.set('estado', estado);
+    if (tipo) params = params.set('tipo', tipo);
     return this.http.get<PageResponse<Expediente>>(this.base, { params });
   }
 
@@ -114,6 +126,14 @@ export class ExpedienteService {
     return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/completar`, body);
   }
 
+  guardar(id: string, stepOrder: number, body: Record<string, unknown>) {
+    return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/guardar`, body);
+  }
+
+  firmar(id: string, stepOrder: number, comentario?: string) {
+    return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/firmar`, { comentario });
+  }
+
   devolver(id: string, stepOrder: number, observaciones: string) {
     return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/devolver`, { observaciones });
   }
@@ -137,6 +157,45 @@ export class ExpedienteService {
   delegar(id: string, stepOrder: number, delegadoId: string, motivo?: string) {
     return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/delegar`, { delegadoId, motivo });
   }
+
+  pasoEsperado(id: string) {
+    return this.http.get<PasoEsperadoResponse>(`${this.base}/${id}/paso-esperado`);
+  }
+
+  forzarPase(id: string, body: ForzarPaseRequest) {
+    return this.http.post<Expediente>(`${this.base}/${id}/forzar-pase`, body);
+  }
+
+  agregarActuacion(id: string, body: AgregarActuacionBody) {
+    return this.http.post<Expediente>(`${this.base}/${id}/actuaciones`, body);
+  }
+
+  marcarCompleto(id: string) {
+    return this.http.post<Expediente>(`${this.base}/${id}/marcar-completo`, {});
+  }
+
+  firmarCierre(id: string, comentario?: string) {
+    return this.http.post<Expediente>(`${this.base}/${id}/firmar-cierre`, { comentario });
+  }
+
+  jefeEditar(id: string, stepOrder: number, body: Record<string, unknown>) {
+    return this.http.put<Expediente>(`${this.base}/${id}/steps/${stepOrder}/jefe-editar`, body);
+  }
+}
+
+export interface PasoEsperadoResponse {
+  circuitoModalidad: string;
+  circuitoNombre: string;
+  pasoEsperado: { order: number; nombre: string; reparticionId: string } | null;
+  esPasoEsperado: boolean;
+}
+
+export interface ForzarPaseRequest {
+  tipoAccion?: string;
+  reparticionDestinoId?: string;
+  archivosIds?: string[];
+  datosFormulario?: Record<string, unknown>;
+  comentario?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -353,6 +412,21 @@ export class PlantillaService {
   listar() { return this.http.get<PlantillaActo[]>(this.base); }
   crear(body: PlantillaActo) { return this.http.post<PlantillaActo>(this.base, body); }
   actualizar(id: string, body: PlantillaActo) { return this.http.put<PlantillaActo>(`${this.base}/${id}`, body); }
+  eliminar(id: string) { return this.http.delete(`${this.base}/${id}`); }
+}
+
+@Injectable({ providedIn: 'root' })
+export class FormularioService {
+  private base = `${environment.apiUrl}/formularios`;
+
+  constructor(private http: HttpClient) {}
+
+  listar(reparticionId?: string) {
+    const q = reparticionId ? `?reparticionId=${reparticionId}` : '';
+    return this.http.get<FormularioPredefinido[]>(`${this.base}${q}`);
+  }
+  crear(body: FormularioPredefinido) { return this.http.post<FormularioPredefinido>(this.base, body); }
+  actualizar(id: string, body: FormularioPredefinido) { return this.http.put<FormularioPredefinido>(`${this.base}/${id}`, body); }
   eliminar(id: string) { return this.http.delete(`${this.base}/${id}`); }
 }
 

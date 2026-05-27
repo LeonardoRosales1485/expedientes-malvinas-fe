@@ -1,14 +1,18 @@
 <button
   type="button"
-  class="seg-list-item card"
+  class="seg-card card"
   [class.selected]="selected"
   (click)="onSelect()"
   [attr.aria-pressed]="selected"
 >
-  <span class="seg-id">{{ expediente.numeroExpediente }}</span>
-  <span class="seg-objeto">{{ expediente.caratula.objeto }}</span>
-  <span class="badge-group seg-badge">
-    <span class="badge-label">Estado:</span>
+  <div class="seg-card-header">
+    <span class="seg-card-id">{{ expediente.numeroExpediente }}</span>
     <span class="badge info">{{ expediente.estadoActual | estadoLabel }}</span>
-  </span>
+  </div>
+  <div class="seg-card-body">
+    <p class="seg-card-objeto">{{ expediente.caratula.objeto }}</p>
+    @if (circuitoTipo) {
+      <span class="seg-card-tipo" [class]="'chip chip--' + circuitoTipoClass">{{ circuitoTipo }}</span>
+    }
+  </div>
 </button>

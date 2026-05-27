@@ -6,10 +6,11 @@ import { LayoutStateService } from '../../core/services/layout-state.service';
 import { CircuitoStepPreviewComponent } from './circuito-step-preview.component';
 import { FORM_FIELD_TYPES, formFieldTypeLabel } from '../../core/constants/form-field-types';
 import { ALL_ROLES, roleLabel } from '../../core/constants/role-labels';
-import { ReparticionService, CircuitoService } from '../../core/services/expediente.service';
+import { ReparticionService, CircuitoService, FormularioService } from '../../core/services/expediente.service';
 import {
   CircuitoAdministrativo,
   FormFieldDef,
+  FormularioPredefinido,
   ModalidadCircuito,
   PasoCircuito,
   Reparticion,
@@ -27,6 +28,7 @@ import {
 export class CircuitosComponent implements OnInit, OnDestroy {
   private readonly circuitoService = inject(CircuitoService);
   private readonly reparticionService = inject(ReparticionService);
+  private readonly formularioService = inject(FormularioService);
   private readonly layoutState = inject(LayoutStateService);
 
   circuitos: CircuitoAdministrativo[] = [];
@@ -52,7 +54,6 @@ export class CircuitosComponent implements OnInit, OnDestroy {
 
   // Autocomplete
   repSearchText = '';
-  circuitoRecomendacionSearch = '';
 
   get filteredCircuitos(): CircuitoAdministrativo[] {
     const q = this.searchText.toLowerCase().trim();
@@ -84,6 +85,7 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   formFieldTypeLabel = formFieldTypeLabel;
   allRoles = ALL_ROLES;
   roleLabel = roleLabel;
+  rolesOptions: Role[] = ['ADMIN', 'USER', 'JEFE_AREA'];
 
   ngOnInit(): void {
     this.load();
@@ -131,46 +133,16 @@ export class CircuitosComponent implements OnInit, OnDestroy {
     this.layoutState.setCircuitoEditorOpen(false);
   }
 
-  get circuitosRecomendacion(): CircuitoAdministrativo[] {
-    return this.circuitos.filter((c) => c.id !== this.editing?.id && c.steps.length > 0);
-  }
-
-  get circuitosRecomendacionFiltrados(): CircuitoAdministrativo[] {
-    const q = this.circuitoRecomendacionSearch.toLowerCase().trim();
-    if (!q) return this.circuitosRecomendacion;
-    return this.circuitosRecomendacion.filter(
-      (c) =>
-        c.nombre.toLowerCase().includes(q) ||
-        (c.numeroCatalogo?.toString() ?? '').includes(q),
-    );
-  }
-
-  get circuitoRecomendacionLabel(): string {
-    const c = this.circuitosRecomendacion.find((c) => c.id === this.editing?.circuitoRecomendacionId);
-    if (!c) return '';
-    return c.nombre + (c.numeroCatalogo ? ` (Nº ${c.numeroCatalogo})` : '');
-  }
-
-  seleccionarCircuitoRecomendacion(id: string): void {
-    if (!this.editing) return;
-    this.editing.circuitoRecomendacionId = id;
-    this.circuitoRecomendacionSearch = this.circuitoRecomendacionLabel;
-  }
-
   // ── Wizard navigation ────────────────────────────────────────────
 
   wizardSiguiente(): void {
     if (this.wizardStep === 1) {
       if (!this.editing?.nombre?.trim()) { this.error = 'El nombre es obligatorio'; return; }
       if (!this.editing?.modalidad) { this.error = 'Seleccioná una modalidad'; return; }
-      if (this.editing.modalidad === 'ORIENTATIVA' && !this.editing.circuitoRecomendacionId) {
-        this.error = 'Seleccioná un circuito de referencia para las recomendaciones';
-        return;
-      }
       this.error = '';
       this.wizardStep = 2;
     } else if (this.wizardStep === 2) {
-      this.showModal = true;
+      this.wizardStep = 3;
     }
   }
 
@@ -346,6 +318,38 @@ export class CircuitosComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Firma config ─────────────────────────────────────────────────
+
+  getRequiereFirma(): boolean {
+    return this.editingStep?.configuracion?.['requiereFirma'] === true;
+  }
+
+  setRequiereFirma(value: boolean): void {
+    if (!this.editingStep) return;
+    const cfg = { ...(this.editingStep.configuracion ?? {}) };
+    cfg['requiereFirma'] = value;
+    if (value && !cfg['rolesFirma']) {
+      cfg['rolesFirma'] = ['JEFE_AREA'];
+    }
+    if (!value) {
+      delete cfg['rolesFirma'];
+    }
+    this.editingStep.configuracion = cfg;
+  }
+
+  getRolesFirma(): Role[] {
+    return (this.editingStep?.configuracion?.['rolesFirma'] as Role[]) ?? [];
+  }
+
+  toggleRolFirma(role: Role, checked: boolean): void {
+    let list = [...this.getRolesFirma()];
+    if (checked && !list.includes(role)) list.push(role);
+    if (!checked) list = list.filter((r) => r !== role);
+    if (this.editingStep) {
+      this.editingStep.configuracion = { ...(this.editingStep.configuracion ?? {}), rolesFirma: list };
+    }
+  }
+
   opcionesText(index: number): string {
     return this.getFormFields()[index]?.opciones?.join(', ') ?? '';
   }
@@ -387,6 +391,62 @@ export class CircuitosComponent implements OnInit, OnDestroy {
       },
       error: (e) => (this.error = e.error?.message || 'Error al guardar'),
     });
+  }
+
+  // ── Formulario selector ───────────────────────────────────────────
+
+  showFormularioSelector = false;
+  formulariosDisponibles: FormularioPredefinido[] = [];
+  formularioFiltroRep = '';
+  formularioSearchText = '';
+
+  abrirSelectorFormularios(): void {
+    this.formularioService.listar().subscribe((fs) => {
+      this.formulariosDisponibles = fs;
+      this.formularioFiltroRep = '';
+      this.formularioSearchText = '';
+      this.showFormularioSelector = true;
+    });
+  }
+
+  cerrarSelectorFormularios(): void {
+    this.showFormularioSelector = false;
+    this.formulariosDisponibles = [];
+  }
+
+  get formulariosFiltrados(): FormularioPredefinido[] {
+    let list = this.formulariosDisponibles;
+    const repId = this.formularioFiltroRep;
+    if (repId) list = list.filter((f) => f.reparticionId === repId);
+    const q = this.formularioSearchText.toLowerCase().trim();
+    if (q) list = list.filter((f) => f.nombre.toLowerCase().includes(q) || (f.descripcion ?? '').toLowerCase().includes(q));
+    return list;
+  }
+
+  reparticionesConFormularios(): Reparticion[] {
+    const ids = new Set(this.formulariosDisponibles.map((f) => f.reparticionId).filter(Boolean));
+    return this.reparticiones.filter((r) => ids.has(r.id));
+  }
+
+  usarFormulario(form: FormularioPredefinido): void {
+    if (!this.editing) return;
+    const next = this.editing.steps.length;
+    const campos = (form.campos || []).map((c) => ({
+      nombre: c.nombre,
+      tipo: c.tipo,
+      requerido: c.requerido ?? false,
+      opciones: c.opciones ?? [],
+    }));
+    this.editing.steps.push({
+      order: next,
+      nombre: form.nombre,
+      reparticionId: form.reparticionId ?? '',
+      tipoAccion: 'FORM' as TipoAccion,
+      plazoDias: 5,
+      configuracion: { formFields: campos },
+      siguienteStep: next + 1,
+    });
+    this.cerrarSelectorFormularios();
   }
 
   // ── Misc helpers ─────────────────────────────────────────────────
@@ -457,9 +517,6 @@ export class CircuitosComponent implements OnInit, OnDestroy {
           newTerm.charAt(0).toUpperCase() + newTerm.slice(1),
         );
       }
-    }
-    if (m !== 'ORIENTATIVA') {
-      this.editing.circuitoRecomendacionId = undefined;
     }
   }
 

@@ -1,4 +1,7 @@
 <div class="preview-mockup">
+  @if (requiereFirma) {
+    <div class="firma-badge">✍️ Requiere firma de autoridad</div>
+  }
   @if (fields.length === 0) {
     <p class="empty-hint">Sin campos definidos</p>
   }

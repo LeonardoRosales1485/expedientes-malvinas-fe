@@ -23,6 +23,7 @@
 .chip--blue { background: #dbeafe; color: #1e40af; }
 .chip--amber { background: #fef3c7; color: #92400e; }
 .chip--emerald { background: #d1fae5; color: #065f46; }
+.chip--firma { background: #ede9fe; color: #5b21b6; }
 
 /* ─── Wizard header ─── */
 .wizard-header { flex-shrink: 0; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 1rem 1.5rem; margin: -1rem -1.5rem 1rem; }
@@ -131,6 +132,12 @@
 /* ─── Form fields editor ─── */
 .form-fields-editor { display: flex; flex-direction: column; gap: 0.5rem; }
 .form-field-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; }
+.form-field-row input:not([type=checkbox]), .form-field-row select {
+  padding: 0.45rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px;
+  font-size: 0.85rem; font-family: inherit; background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  &:focus { outline: none; border-color: #1a5276; box-shadow: 0 0 0 3px rgba(26,82,118,0.1); }
+}
 .form-field-row .field-name { flex: 1; min-width: 100px; }
 .form-field-row .field-type { width: auto; min-width: 100px; }
 .form-field-row .field-req { display: flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
@@ -167,6 +174,34 @@
 .preview-step-meta .dot { color: #d1d5db; }
 .preview-chip { font-size: 0.68rem; padding: 0.05rem 0.35rem; }
 .preview-arrow { font-size: 1.25rem; color: #9ca3af; padding: 0.15rem 0; line-height: 1; }
+
+/* ─── Formulario selector modal ─── */
+.selector-modal .modal-body { display: flex; flex-direction: column; gap: 1rem; }
+.filter-row { display: flex; gap: 0.75rem; }
+.filter-row label { flex: 1; }
+.filter-label {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  font-size: 0.85rem; font-weight: 600; color: #374151;
+  input, select { padding: 0.45rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; }
+}
+.form-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff;
+  transition: box-shadow 0.15s;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+}
+.form-item-body {
+  flex: 1; display: flex; flex-direction: column; gap: 0.2rem;
+  strong { font-size: 0.9rem; color: #1a5276; }
+}
+.form-item-desc { font-size: 0.8rem; color: #6b7280; }
+.form-item-meta { font-size: 0.75rem; color: #9ca3af; }
+.rep-badge {
+  display: inline-block; font-size: 0.7rem; font-weight: 700;
+  background: #f3f4f6; color: #374151; padding: 0.1rem 0.4rem;
+  border-radius: 4px; white-space: nowrap;
+}
 
 /* ─── Responsive ─── */
 @media (max-width: 767px) {

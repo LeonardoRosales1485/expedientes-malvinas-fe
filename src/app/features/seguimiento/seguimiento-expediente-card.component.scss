@@ -1,19 +1,21 @@
-.seg-list-item {
+.seg-card {
   width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.5rem 0.65rem;
-  padding: 0.5rem 0.65rem;
-  margin-bottom: 0.4rem;
-  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
   font: inherit;
-  transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
 
   &:hover {
-    background: #f8f9fa;
+    border-color: #d1d5db;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
 
   &.selected {
@@ -22,24 +24,60 @@
   }
 }
 
-.seg-id {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--mma-navy);
-  white-space: nowrap;
+.seg-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
-.seg-objeto {
-  font-size: 0.78rem;
-  color: var(--mma-text-muted);
+.seg-card-id {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--mma-navy);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 
-.seg-badge {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.45rem;
+.seg-card-body {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.seg-card-objeto {
+  font-size: 0.78rem;
+  color: var(--mma-text-muted);
+  margin: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.seg-card-tipo {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.chip--libre {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.chip--orientativa {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.chip--restrictiva {
+  background: #fee2e2;
+  color: #991b1b;
 }

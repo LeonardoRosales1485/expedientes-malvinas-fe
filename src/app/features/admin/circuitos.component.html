@@ -127,35 +127,6 @@
         @if (editing!.generico) {
           <p class="hint">Los circuitos genéricos usan modalidad LIBRE.</p>
         }
-
-        @if (editing!.modalidad === 'ORIENTATIVA') {
-          <label class="form-field">
-            <span class="form-field-label">Circuito de referencia para recomendaciones</span>
-            <div class="autocomplete">
-              <input type="text" [(ngModel)]="circuitoRecomendacionSearch"
-                     (input)="circuitoRecomendacionSearch = $any($event.target).value"
-                     placeholder="Buscá por nombre o nº de catálogo…" />
-              @if (circuitosRecomendacionFiltrados.length > 0 && circuitoRecomendacionSearch.length > 0) {
-                <div class="autocomplete-dropdown">
-                  @for (c of circuitosRecomendacionFiltrados; track c.id) {
-                    <div class="autocomplete-item" (click)="seleccionarCircuitoRecomendacion(c.id)">
-                      <strong>{{ c.nombre }}</strong>
-                      @if (c.numeroCatalogo) { <span class="chip chip--generico">Nº {{ c.numeroCatalogo }}</span> }
-                    </div>
-                  }
-                </div>
-              }
-              @if (circuitosRecomendacionFiltrados.length === 0 && circuitoRecomendacionSearch.length > 0) {
-                <div class="autocomplete-dropdown">
-                  <div class="autocomplete-item disabled">Sin resultados</div>
-                </div>
-              }
-            </div>
-            @if (!editing!.circuitoRecomendacionId) {
-              <small class="field-hint">Elegí un circuito existente para usar sus pasos como guía.</small>
-            }
-          </label>
-        }
       </div>
     </div>
   }
@@ -166,6 +137,7 @@
       <div class="steps-toolbar">
         <span class="steps-count">{{ stepsLabel(editing!.modalidad, editing!.steps.length) }}</span>
         <button class="btn-primary small" (click)="agregarPaso()">+ Agregar {{ termSteps(editing!.modalidad) }}</button>
+        <button class="btn-secondary small" (click)="abrirSelectorFormularios()">📋 Usar formularios existentes</button>
       </div>
 
       <div cdkDropList class="steps-list" (cdkDropListDropped)="dropStep($event)">
@@ -181,12 +153,64 @@
                     [class.chip--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
                 {{ tipoAccionIcon(step.tipoAccion) }} {{ tipoAccionLabel(step.tipoAccion) }}
               </span>
+              @if (step.configuracion?.['requiereFirma']) {
+                <span class="chip chip--firma" title="Requiere firma de autoridad">✍️ Firma</span>
+              }
               <span class="rep-badge" [title]="repNombre(step.reparticionId)">{{ repSigla(step.reparticionId) }}</span>
               <span class="spacer"></span>
               <button class="btn-icon" (click)="openDrawer(i)" title="Editar paso">✏️</button>
               <button class="btn-icon btn-icon--danger" (click)="eliminarPaso(i)" title="Eliminar paso">🗑️</button>
             </div>
           </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── PASO 3: VISTA FINAL ── -->
+  @if (wizardStep === 3 && editing) {
+    <div class="wizard-body">
+      <div class="preview-header">
+        <span class="preview-title">{{ editing.nombre }}</span>
+        <span class="chip"
+              [class.chip--libre]="editing.modalidad === 'LIBRE'"
+              [class.chip--orientativa]="editing.modalidad === 'ORIENTATIVA'"
+              [class.chip--restrictiva]="editing.modalidad === 'RESTRICTIVA'">
+          {{ modalidadInfo(editing.modalidad).icon }} {{ editing.modalidad }}
+        </span>
+        @if (editing.activo) { <span class="chip chip--active">Activo</span> }
+      </div>
+
+      <div class="preview-steps">
+        @for (step of editing.steps; track step.order; let i = $index) {
+          <div class="preview-step-card"
+               [class.border--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
+               [class.border--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
+               [class.border--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
+            <div class="preview-step-left">
+              <span class="preview-step-order">{{ i + 1 }}</span>
+            </div>
+            <div class="preview-step-body">
+              <div class="preview-step-name">{{ step.nombre }}</div>
+              <div class="preview-step-meta">
+                <span>{{ repNombre(step.reparticionId) }}</span>
+                <span class="dot">·</span>
+                <span>{{ step.plazoDias }} día{{ step.plazoDias !== 1 ? 's' : '' }}</span>
+                <span class="chip preview-chip"
+                      [class.chip--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
+                      [class.chip--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
+                      [class.chip--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
+                  {{ tipoAccionIcon(step.tipoAccion) }} {{ tipoAccionLabel(step.tipoAccion) }}
+                </span>
+                @if (step.configuracion?.['requiereFirma']) {
+                  <span class="chip chip--firma">✍️ Firma</span>
+                }
+              </div>
+            </div>
+          </div>
+          @if (i < editing.steps.length - 1) {
+            <div class="preview-arrow">↓</div>
+          }
         }
       </div>
     </div>
@@ -290,7 +314,7 @@
 
             <div class="field-preview">
               <label class="section-label">Vista previa</label>
-              <app-circuito-step-preview [fields]="getFormFields()" />
+              <app-circuito-step-preview [fields]="getFormFields()" [requiereFirma]="getRequiereFirma()" />
             </div>
           </div>
         }
@@ -312,6 +336,29 @@
             <input type="text" [value]="getExtensiones()"
                    (input)="setExtensiones($any($event.target).value)" placeholder=".pdf, .jpg, .png" />
           </label>
+        }
+
+        <!-- Firma (para FORM y FILE_UPLOAD) -->
+        @if (editingStep.tipoAccion === 'FORM' || editingStep.tipoAccion === 'FILE_UPLOAD') {
+          <div class="firma-section">
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="getRequiereFirma()"
+                     (change)="setRequiereFirma($any($event.target).checked)" />
+              Requiere firma de autoridad
+            </label>
+            @if (getRequiereFirma()) {
+              <label class="section-label">Roles que pueden firmar</label>
+              <div class="checkbox-grid">
+                @for (role of rolesOptions; track role) {
+                  <label class="checkbox-label">
+                    <input type="checkbox" [checked]="getRolesFirma().includes(role)"
+                           (change)="toggleRolFirma(role, $any($event.target).checked)" />
+                    {{ roleLabel(role) }}
+                  </label>
+                }
+              </div>
+            }
+          </div>
         }
 
         <!-- APPROVAL -->
@@ -365,59 +412,53 @@
   </div>
 }
 
-<!-- ═══════════════ MODAL VISTA FINAL ═══════════════ -->
-@if (showModal && editing) {
-  <div class="modal-overlay" (click)="closeModal()"></div>
-  <div class="modal">
+<!-- ═══════════════ FORMULARIO SELECTOR MODAL ═══════════════ -->
+@if (showFormularioSelector) {
+  <div class="modal-overlay" (click)="cerrarSelectorFormularios()"></div>
+  <div class="modal selector-modal">
     <div class="modal-header">
-      <h2>Vista previa del circuito</h2>
-      <button class="btn-icon" (click)="closeModal()">×</button>
+      <h2>Usar formulario existente</h2>
+      <button class="btn-icon" (click)="cerrarSelectorFormularios()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="preview-header">
-        <span class="preview-title">{{ editing.nombre }}</span>
-        <span class="chip"
-              [class.chip--libre]="editing.modalidad === 'LIBRE'"
-              [class.chip--orientativa]="editing.modalidad === 'ORIENTATIVA'"
-              [class.chip--restrictiva]="editing.modalidad === 'RESTRICTIVA'">
-          {{ modalidadInfo(editing.modalidad).icon }} {{ editing.modalidad }}
-        </span>
-        @if (editing.activo) { <span class="chip chip--active">Activo</span> }
+      <div class="filter-row">
+        <label class="filter-label">
+          Buscar
+          <input type="text" [(ngModel)]="formularioSearchText" placeholder="Nombre o descripción…" />
+        </label>
+        <label class="filter-label">
+          Repartición
+          <select [(ngModel)]="formularioFiltroRep">
+            <option value="">Todas</option>
+            @for (r of reparticionesConFormularios(); track r.id) {
+              <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
+            }
+          </select>
+        </label>
       </div>
 
-      <div class="preview-steps">
-        @for (step of editing.steps; track step.order; let i = $index) {
-          <div class="preview-step-card"
-               [class.border--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
-               [class.border--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
-               [class.border--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
-            <div class="preview-step-left">
-              <span class="preview-step-order">{{ i + 1 }}</span>
+      <div class="form-list">
+        @if (formulariosFiltrados.length === 0) {
+          <p class="empty">No hay formularios disponibles.</p>
+        }
+        @for (f of formulariosFiltrados; track f.id) {
+          <div class="form-item">
+            <div class="form-item-body">
+              <strong>{{ f.nombre }}</strong>
+              @if (f.descripcion) {
+                <span class="form-item-desc">{{ f.descripcion }}</span>
+              }
+              <span class="form-item-meta">
+                {{ f.campos.length }} campos
+                @if (f.reparticionId) {
+                  · <span class="rep-badge">{{ repSigla(f.reparticionId) }}</span>
+                }
+              </span>
             </div>
-            <div class="preview-step-body">
-              <div class="preview-step-name">{{ step.nombre }}</div>
-              <div class="preview-step-meta">
-                <span>{{ repNombre(step.reparticionId) }}</span>
-                <span class="dot">·</span>
-                <span>{{ step.plazoDias }} día{{ step.plazoDias !== 1 ? 's' : '' }}</span>
-                <span class="chip preview-chip"
-                      [class.chip--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
-                      [class.chip--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
-                      [class.chip--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
-                  {{ tipoAccionIcon(step.tipoAccion) }} {{ tipoAccionLabel(step.tipoAccion) }}
-                </span>
-              </div>
-            </div>
+            <button class="btn-primary small" (click)="usarFormulario(f)">Usar</button>
           </div>
-          @if (i < editing.steps.length - 1) {
-            <div class="preview-arrow">↓</div>
-          }
         }
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeModal()">← Volver</button>
-      <button class="btn-primary" (click)="confirmarGuardar()">Guardar circuito</button>
     </div>
   </div>
 }
@@ -433,6 +474,8 @@
       <button class="btn-primary" (click)="wizardSiguiente()">
         {{ wizardStep === 1 ? 'Siguiente →' : 'Revisar y guardar →' }}
       </button>
+    } @else {
+      <button class="btn-primary" (click)="confirmarGuardar()">Guardar circuito</button>
     }
   </div>
 }

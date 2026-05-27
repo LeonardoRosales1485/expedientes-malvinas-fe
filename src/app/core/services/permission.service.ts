@@ -48,4 +48,14 @@ export class PermissionService {
     if (!this.canMutateExpediente()) return false;
     return this.canActOnReparticion(step.reparticionId);
   }
+
+  canSignStep(step: HistorialStep | null | undefined): boolean {
+    if (!step || step.estado !== 'guardado') return false;
+    if (!this.canMutateExpediente()) return false;
+    if (!this.canActOnReparticion(step.reparticionId)) return false;
+    const userId = this.auth.currentUser()?.userId;
+    if (!userId) return false;
+    const fueElQueGuardo = (step.usuariosResponsables ?? []).includes(userId);
+    return !fueElQueGuardo;
+  }
 }

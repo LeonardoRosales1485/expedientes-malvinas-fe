@@ -1,5 +1,5 @@
 export type { DemoUser } from './demo-user';
-export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO' | 'CARATULADOR';
+export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO' | 'CARATULADOR' | 'JEFE_AREA';
 export type TipoAccion = 'FILE_UPLOAD' | 'FORM' | 'APPROVAL';
 export type ModalidadCircuito = 'RESTRICTIVA' | 'ORIENTATIVA' | 'LIBRE';
 
@@ -68,6 +68,20 @@ export interface PasoCircuito {
   siguienteStep?: number | null;
 }
 
+export interface FirmaRequeridaCierre {
+  reparticionId: string;
+  descripcion?: string;
+}
+
+export interface FirmaExpediente {
+  id: string;
+  usuarioId: string;
+  nombreUsuario: string;
+  reparticionId: string;
+  comentario?: string;
+  fecha: string;
+}
+
 export interface CircuitoAdministrativo {
   id: string;
   nombre: string;
@@ -78,7 +92,7 @@ export interface CircuitoAdministrativo {
   numeroCatalogo?: number;
   modalidad: ModalidadCircuito;
   generico?: boolean;
-  circuitoRecomendacionId?: string;
+  firmasRequeridas?: FirmaRequeridaCierre[];
 }
 
 export interface NotificacionLog {
@@ -88,10 +102,25 @@ export interface NotificacionLog {
   fecha: string;
 }
 
+export interface ActuacionAdhoc {
+  id: string;
+  tipo: 'ACTA' | 'HOJA';
+  titulo?: string;
+  contenidoHtml?: string;
+  datosFormulario?: Record<string, unknown>;
+  camposDefinicion?: CampoFormulario[];
+  plantillaId?: string;
+  plantillaNombre?: string;
+  creadoPorId?: string;
+  creadoPorNombre?: string;
+  creadoEn?: string;
+}
+
 export interface Expediente {
   id: string;
   numeroExpediente: string;
   circuitoAdministrativoId: string;
+  circuitoModalidad?: string;
   circuitoVersion: number;
   caratula: {
     fechaInicio?: string;
@@ -105,6 +134,9 @@ export interface Expediente {
   notificacionesLog?: NotificacionLog[];
   estadoVencimiento?: string;
   fechaCierre?: string;
+  actuacionesAdhoc?: ActuacionAdhoc[];
+  firmasRequeridas?: FirmaRequeridaCierre[];
+  firmasExpediente?: FirmaExpediente[];
 }
 
 export interface Aprobacion {
@@ -112,6 +144,13 @@ export interface Aprobacion {
   comentario?: string;
   fecha: string;
   nombreUsuario?: string;
+}
+
+export interface Firma {
+  usuarioId: string;
+  nombreUsuario: string;
+  fecha: string;
+  comentario?: string;
 }
 
 export interface Delegacion {
@@ -147,6 +186,7 @@ export interface HistorialStep {
   revisionMotivo?: string;
   revisionAdminNombre?: string;
   revisionFecha?: string;
+  firma?: Firma;
 }
 
 export interface Notification {
@@ -163,6 +203,24 @@ export interface FormFieldDef {
   tipo: string;
   requerido?: boolean;
   opciones?: string[];
+}
+
+export interface CampoFormulario {
+  nombre: string;
+  tipo: string;
+  requerido?: boolean;
+  opciones?: string[];
+}
+
+export interface FormularioPredefinido {
+  id?: string;
+  nombre: string;
+  descripcion?: string;
+  reparticionId?: string;
+  campos: CampoFormulario[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PlantillaActo {

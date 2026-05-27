@@ -1,7 +1,8 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PlantillaActo } from '../../core/models';
-import { PlantillaService } from '../../core/services/expediente.service';
+import { PlantillaActo, CampoFormulario, FormularioPredefinido, Reparticion } from '../../core/models';
+import { PlantillaService, FormularioService, ReparticionService } from '../../core/services/expediente.service';
+import { FORM_FIELD_TYPES, formFieldTypeLabel } from '../../core/constants/form-field-types';
 import Quill from 'quill';
 
 @Component({
@@ -12,28 +13,55 @@ import Quill from 'quill';
   styleUrl: './plantillas.component.scss',
 })
 export class PlantillasComponent implements OnInit, OnDestroy {
-  private readonly svc = inject(PlantillaService);
+  private readonly ptSvc = inject(PlantillaService);
+  private readonly fmSvc = inject(FormularioService);
+  private readonly repSvc = inject(ReparticionService);
 
   @ViewChild('quillContainer', { static: false }) quillContainer!: ElementRef<HTMLDivElement>;
 
+  activeTab: 'plantillas' | 'formularios' = 'plantillas';
+
+  // ── Plantillas ──
   plantillas: PlantillaActo[] = [];
   editing: Partial<PlantillaActo> | null = null;
   saving = false;
-
   private quill: Quill | null = null;
-
   readonly TIPOS = ['Nota', 'DECRETO', 'RESOLUCIÓN', 'DISPOSICIÓN'];
+
+  // ── Formularios ──
+  formularios: FormularioPredefinido[] = [];
+  editingForm: Partial<FormularioPredefinido> | null = null;
+  savingForm = false;
+  reparticiones: Reparticion[] = [];
+  readonly formFieldTypes = FORM_FIELD_TYPES;
+  readonly formFieldTypeLabel = formFieldTypeLabel;
 
   ngOnInit(): void {
     this.cargar();
+    this.cargarFormularios();
+    this.repSvc.listar().subscribe((r) => (this.reparticiones = r));
   }
 
   ngOnDestroy(): void {
     this.destroyQuill();
   }
 
+  // ── Tab switching ──
+  setTab(tab: 'plantillas' | 'formularios'): void {
+    this.activeTab = tab;
+    if (tab === 'plantillas') {
+      this.cancelarFormulario();
+    } else {
+      this.cancelar();
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  PLANTILLAS (existing)
+  // ══════════════════════════════════════════════
+
   cargar(): void {
-    this.svc.listar().subscribe((p) => (this.plantillas = p));
+    this.ptSvc.listar().subscribe((p) => (this.plantillas = p));
   }
 
   nueva(): void {
@@ -59,8 +87,8 @@ export class PlantillasComponent implements OnInit, OnDestroy {
     this.saving = true;
     const body = this.editing as PlantillaActo;
     const op$ = body.id
-      ? this.svc.actualizar(body.id, body)
-      : this.svc.crear(body);
+      ? this.ptSvc.actualizar(body.id, body)
+      : this.ptSvc.crear(body);
     op$.subscribe({
       next: () => {
         this.saving = false;
@@ -74,7 +102,7 @@ export class PlantillasComponent implements OnInit, OnDestroy {
 
   eliminar(p: PlantillaActo): void {
     if (!p.id || !confirm(`¿Eliminar plantilla "${p.nombre}"?`)) return;
-    this.svc.eliminar(p.id).subscribe(() => this.cargar());
+    this.ptSvc.eliminar(p.id).subscribe(() => this.cargar());
   }
 
   insertVariable(varName: string): void {
@@ -114,5 +142,93 @@ export class PlantillasComponent implements OnInit, OnDestroy {
     if (this.quill) {
       this.quill = null;
     }
+  }
+
+  // ══════════════════════════════════════════════
+  //  FORMULARIOS
+  // ══════════════════════════════════════════════
+
+  cargarFormularios(): void {
+    this.fmSvc.listar().subscribe((f) => (this.formularios = f));
+  }
+
+  repNombre(id?: string): string {
+    if (!id) return '';
+    return this.reparticiones.find((r) => r.id === id)?.nombre ?? '';
+  }
+
+  repSigla(id?: string): string {
+    if (!id) return '';
+    return this.reparticiones.find((r) => r.id === id)?.sigla ?? '';
+  }
+
+  nuevaFormulario(): void {
+    this.editingForm = { nombre: '', descripcion: '', campos: [], reparticionId: '' };
+  }
+
+  editarFormulario(f: FormularioPredefinido): void {
+    this.editingForm = { ...f, campos: JSON.parse(JSON.stringify(f.campos || [])) };
+  }
+
+  cancelarFormulario(): void {
+    this.editingForm = null;
+  }
+
+  guardarFormulario(): void {
+    if (!this.editingForm) return;
+    this.savingForm = true;
+    const body = this.editingForm as FormularioPredefinido;
+    const op$ = body.id
+      ? this.fmSvc.actualizar(body.id, body)
+      : this.fmSvc.crear(body);
+    op$.subscribe({
+      next: () => {
+        this.savingForm = false;
+        this.editingForm = null;
+        this.cargarFormularios();
+      },
+      error: () => (this.savingForm = false),
+    });
+  }
+
+  eliminarFormulario(f: FormularioPredefinido): void {
+    if (!f.id || !confirm(`¿Eliminar formulario "${f.nombre}"?`)) return;
+    this.fmSvc.eliminar(f.id).subscribe(() => this.cargarFormularios());
+  }
+
+  // ── Campo helpers ──
+
+  private campos(): CampoFormulario[] {
+    return this.editingForm?.campos ?? [];
+  }
+
+  addCampo(): void {
+    if (!this.editingForm) return;
+    this.editingForm.campos = [...this.campos(), { nombre: '', tipo: 'text', requerido: false, opciones: [] }];
+  }
+
+  removeCampo(i: number): void {
+    if (!this.editingForm) return;
+    this.editingForm.campos = this.campos().filter((_, idx) => idx !== i);
+  }
+
+  updateCampo(i: number, patch: Partial<{ nombre: string; tipo: string; requerido: boolean }>): void {
+    if (!this.editingForm) return;
+    const list = [...this.campos()];
+    if (list[i]) Object.assign(list[i], patch);
+    this.editingForm.campos = list;
+  }
+
+  opcionesText(i: number): string {
+    return (this.campos()[i]?.opciones ?? []).join(', ');
+  }
+
+  setOpcionesText(i: number, text: string): void {
+    if (!this.editingForm) return;
+    const list = [...this.campos()];
+    if (list[i]) {
+      list[i].opciones = text.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    this.editingForm.campos = list;
   }
 }

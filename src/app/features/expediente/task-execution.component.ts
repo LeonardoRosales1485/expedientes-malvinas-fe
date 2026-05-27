@@ -6,6 +6,7 @@ import { TEXT_MAX_LENGTH } from '../../core/constants/form-field-types';
 import { Expediente, HistorialStep, TipoAccion } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { ExpedienteService, FileService, UserAdmin, UserAdminService } from '../../core/services/expediente.service';
+import { PermissionService } from '../../core/services/permission.service';
 
 interface FormFieldDef {
   nombre: string;
@@ -28,7 +29,10 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
   @Input() submitting = false;
   @Input() reparticionNombre = '';
   @Input() editMode = false;
+  @Input() signMode = false;
   @Output() completed = new EventEmitter<Record<string, unknown>>();
+  @Output() saved = new EventEmitter<Record<string, unknown>>();
+  @Output() signed = new EventEmitter<string>();
   @Output() devolver = new EventEmitter<string>();
   @Output() edited = new EventEmitter<Record<string, unknown>>();
   @Output() delegado = new EventEmitter<Expediente>();
@@ -40,8 +44,10 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
   private readonly auth = inject(AuthService);
   private readonly expService = inject(ExpedienteService);
   private readonly userAdminService = inject(UserAdminService);
+  readonly perm = inject(PermissionService);
 
   comentario = '';
+  signComment = '';
   observacionDevolver = '';
   selectedFiles: File[] = [];
   uploading = false;
@@ -91,6 +97,10 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
     return this.step.tipoAccion;
   }
 
+  get requiereFirma(): boolean {
+    return (this.configuracion?.['requiereFirma'] as boolean) ?? false;
+  }
+
   tipoAccionLabel(tipo: string): string {
     const map: Record<string, string> = {
       FILE_UPLOAD: 'Carga de archivos',
@@ -119,15 +129,11 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
 
   submitForm(): void {
     if (this.formFields.length === 0) {
-      this.completed.emit({});
+      this.emitSaveOrComplete({});
       return;
     }
     if (this.form.invalid) return;
-    this.completed.emit({ formData: this.form.getRawValue() });
-  }
-
-  submitApproval(): void {
-    this.completed.emit({ comentario: this.comentario });
+    this.emitSaveOrComplete({ formData: this.form.getRawValue() });
   }
 
   submitFile(): void {
@@ -145,13 +151,25 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
         this.uploading = false;
         this.selectedFiles = [];
         if (this.fileInputRef?.nativeElement) this.fileInputRef.nativeElement.value = '';
-        this.completed.emit({ archivosIds: metas.map((m) => m.id) });
+        this.emitSaveOrComplete({ archivosIds: metas.map((m) => m.id) });
       },
       error: () => {
         this.uploading = false;
         this.uploadError = 'Error al subir archivos';
       },
     });
+  }
+
+  private emitSaveOrComplete(payload: Record<string, unknown>): void {
+    if (this.requiereFirma && !this.editMode) {
+      this.saved.emit(payload);
+    } else {
+      this.completed.emit(payload);
+    }
+  }
+
+  submitSign(): void {
+    this.signed.emit(this.signComment);
   }
 
   submitEdit(): void {
@@ -205,5 +223,15 @@ export class TaskExecutionComponent implements OnChanges, OnInit {
       },
       error: () => (this.delegando = false),
     });
+  }
+
+  get primerResponsableNombre(): string {
+    const [firstId] = this.step.usuariosResponsables ?? [];
+    if (!firstId) return 'Usuario';
+    return this.step.responsablesNombres?.[firstId] ?? firstId;
+  }
+
+  formEntries(data?: Record<string, unknown>): [string, unknown][] {
+    return data ? Object.entries(data) : [];
   }
 }

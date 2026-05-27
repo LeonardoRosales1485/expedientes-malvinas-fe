@@ -2,106 +2,154 @@
   @if (editMode) {
     <h3 class="task-title">Editar paso</h3>
   }
+  @if (signMode) {
+    <h3 class="task-title">Firmar paso</h3>
+  }
   <div class="circuito-info">
     <span class="ci-name">{{ step.nombreStep }}</span>
     <span class="ci-chip">{{ tipoAccionLabel(step.tipoAccion) }}</span>
   </div>
   <p class="ci-reparticion">Repartición: <strong>{{ reparticionNombre || step.reparticionId }}</strong></p>
 
-  @switch (tipo) {
-    @case ('FORM') {
-      <form [formGroup]="form" (ngSubmit)="editMode ? submitEdit() : submitForm()">
-        @if (formFields.length === 0) {
-          <p class="hint">Este paso no tiene campos de formulario configurados.</p>
-        }
-        @for (field of formFields; track field.nombre) {
-          <label>
-            {{ field.nombre }}
-            @switch (field.tipo) {
-              @case ('boolean') {
-                <select [formControlName]="field.nombre">
-                  <option value="">—</option>
-                  <option value="true">Sí</option>
-                  <option value="false">No</option>
-                </select>
-              }
-              @case ('textarea') {
-                <textarea [formControlName]="field.nombre" rows="3"></textarea>
-              }
-              @case ('date') {
-                <input type="date" [formControlName]="field.nombre" />
-              }
-              @case ('number') {
-                <input type="number" [formControlName]="field.nombre" />
-              }
-              @case ('select') {
-                <select [formControlName]="field.nombre">
-                  <option value="">—</option>
-                  @for (opt of field.opciones ?? []; track opt) {
-                    <option [value]="opt">{{ opt }}</option>
-                  }
-                </select>
-              }
-              @default {
-                <input type="text" [formControlName]="field.nombre" [attr.maxlength]="textMaxLength" />
-              }
-            }
-          </label>
-        }
-        <button type="submit" class="btn-primary" [disabled]="submitting || (formFields.length > 0 && form.invalid)">
-          {{ editMode ? 'Guardar cambios ›' : (submitting ? 'Completando...' : 'Completar paso ›') }}
-        </button>
-      </form>
-    }
-    @case ('FILE_UPLOAD') {
-      <label class="file-label">
-        {{ editMode ? 'Agregar documentos' : 'Adjuntar documentos (mín. ' + minArchivos + ')' }}
-        <input #fileInput type="file" multiple accept=".pdf,.jpg,.jpeg,.png" (change)="onFilesSelected($event)" />
-      </label>
-      @if (selectedFiles.length) {
-        <ul class="file-list">
-          @for (f of selectedFiles; track f.name) {
-            <li>{{ f.name }} ({{ f.size | number }} bytes)</li>
+  @if (signMode) {
+    <!-- ═══════════ MODO FIRMA: vista readonly + botón firmar ═══════════ -->
+    @if (step.datosFormulario && formEntries(step.datosFormulario).length > 0) {
+      <div class="form-data-preview">
+        <p class="section-label">Datos cargados</p>
+        <dl class="form-data-list">
+          @for (entry of formEntries(step.datosFormulario); track entry[0]) {
+            <div class="form-data-row">
+              <dt>{{ entry[0] }}</dt>
+              <dd>{{ entry[1] }}</dd>
+            </div>
           }
-        </ul>
-      }
-      @if (uploadError) { <p class="error">{{ uploadError }}</p> }
-      <button type="button" class="btn-primary" (click)="editMode ? submitEdit() : submitFile()" [disabled]="uploading">
-        {{ uploading ? 'Subiendo...' : (editMode ? 'Subir archivos ›' : 'Subir y completar paso ›') }}
-      </button>
+        </dl>
+      </div>
     }
-    @case ('APPROVAL') {
-      @let aprobacionesNecesarias = ($any(configuracion)?.['aprobacionesNecesarias'] ?? 1);
-      @if ((step.aprobaciones?.length ?? 0) > 0) {
-        <div class="aprobaciones-info">
-          <p class="aprobaciones-contador">
-            <strong>{{ step.aprobaciones?.length }} de {{ aprobacionesNecesarias }}</strong> aprobaciones registradas
-          </p>
-          <ul class="aprobaciones-lista">
-            @for (ap of step.aprobaciones ?? []; track ap.usuarioId) {
-              <li>
-                <span class="ap-nombre">{{ ap.nombreUsuario }}</span>
-                @if (ap.comentario) { <span class="ap-comentario">— {{ ap.comentario }}</span> }
-              </li>
+    @if (step.tipoAccion === 'FILE_UPLOAD' && (step.archivosIds?.length ?? 0) > 0) {
+      <p class="file-count">&#128206; {{ step.archivosIds?.length }} archivo(s) adjunto(s)</p>
+    }
+    <p class="hint">Guardado por: <strong>{{ primerResponsableNombre }}</strong></p>
+    <hr />
+    <label>
+      Comentario de firma (opcional)
+      <textarea [(ngModel)]="signComment" rows="2" placeholder="Agregue un comentario…"></textarea>
+    </label>
+    <button type="button" class="btn-primary" (click)="submitSign()" [disabled]="submitting">
+      {{ submitting ? 'Firmando...' : 'Firmar paso ›' }}
+    </button>
+
+  } @else {
+    <!-- ═══════════ MODO NORMAL / EDICIÓN / GUARDADO ═══════════ -->
+    @switch (tipo) {
+      @case ('FORM') {
+        <form [formGroup]="form" (ngSubmit)="editMode ? submitEdit() : submitForm()">
+          @if (formFields.length === 0) {
+            <p class="hint">Este paso no tiene campos de formulario configurados.</p>
+          }
+          @for (field of formFields; track field.nombre) {
+            <label>
+              {{ field.nombre }}
+              @switch (field.tipo) {
+                @case ('boolean') {
+                  <select [formControlName]="field.nombre">
+                    <option value="">—</option>
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                }
+                @case ('textarea') {
+                  <textarea [formControlName]="field.nombre" rows="3"></textarea>
+                }
+                @case ('date') {
+                  <input type="date" [formControlName]="field.nombre" />
+                }
+                @case ('number') {
+                  <input type="number" [formControlName]="field.nombre" />
+                }
+                @case ('select') {
+                  <select [formControlName]="field.nombre">
+                    <option value="">—</option>
+                    @for (opt of field.opciones ?? []; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                }
+                @default {
+                  <input type="text" [formControlName]="field.nombre" [attr.maxlength]="textMaxLength" />
+                }
+              }
+            </label>
+          }
+          <button type="submit" class="btn-primary" [disabled]="submitting || (formFields.length > 0 && form.invalid)">
+            @if (editMode) {
+              Guardar cambios ›
+            } @else if (requiereFirma) {
+              {{ submitting ? 'Guardando...' : 'Guardar paso ›' }}
+            } @else {
+              {{ submitting ? 'Completando...' : 'Completar paso ›' }}
+            }
+          </button>
+        </form>
+      }
+      @case ('FILE_UPLOAD') {
+        <label class="file-label">
+          {{ editMode ? 'Agregar documentos' : 'Adjuntar documentos (mín. ' + minArchivos + ')' }}
+          <input #fileInput type="file" multiple accept=".pdf,.jpg,.jpeg,.png" (change)="onFilesSelected($event)" />
+        </label>
+        @if (selectedFiles.length) {
+          <ul class="file-list">
+            @for (f of selectedFiles; track f.name) {
+              <li>{{ f.name }} ({{ f.size | number }} bytes)</li>
             }
           </ul>
-        </div>
-      }
-      @if (yaAprobo) {
-        <p class="hint">Ya registró su aprobación en este paso.</p>
-      } @else {
-        <label>
-          Comentario (opcional)
-          <textarea [(ngModel)]="comentario" rows="3"></textarea>
-        </label>
-        <button type="button" class="btn-primary" [disabled]="yaAprobo" (click)="editMode ? submitEdit() : submitApproval()">
-          {{ editMode ? 'Registrar aprobación ›' : 'Aprobar ›' }}
+        }
+        @if (uploadError) { <p class="error">{{ uploadError }}</p> }
+        <button type="button" class="btn-primary" (click)="editMode ? submitEdit() : submitFile()" [disabled]="uploading">
+          @if (uploading) {
+            Subiendo...
+          } @else if (editMode) {
+            Subir archivos ›
+          } @else if (requiereFirma) {
+            Guardar paso ›
+          } @else {
+            Subir y completar paso ›
+          }
         </button>
+      }
+      @case ('APPROVAL') {
+        @let aprobacionesNecesarias = ($any(configuracion)?.['aprobacionesNecesarias'] ?? 1);
+        @if ((step.aprobaciones?.length ?? 0) > 0) {
+          <div class="aprobaciones-info">
+            <p class="aprobaciones-contador">
+              <strong>{{ step.aprobaciones?.length }} de {{ aprobacionesNecesarias }}</strong> aprobaciones registradas
+            </p>
+            <ul class="aprobaciones-lista">
+              @for (ap of step.aprobaciones ?? []; track ap.usuarioId) {
+                <li>
+                  <span class="ap-nombre">{{ ap.nombreUsuario }}</span>
+                  @if (ap.comentario) { <span class="ap-comentario">— {{ ap.comentario }}</span> }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+        @if (yaAprobo) {
+          <p class="hint">Ya registró su aprobación en este paso.</p>
+        } @else {
+          <label>
+            Comentario (opcional)
+            <textarea [(ngModel)]="comentario" rows="3"></textarea>
+          </label>
+          <button type="button" class="btn-primary" [disabled]="yaAprobo" (click)="editMode ? submitEdit() : submitForm()">
+            {{ editMode ? 'Registrar aprobación ›' : 'Aprobar ›' }}
+          </button>
+        }
       }
     }
   }
 
-  @if (!editMode) {
+  @if (!editMode && !signMode) {
     <hr />
     <label>
       Devolver con observaciones
