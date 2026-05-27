@@ -1,10 +1,12 @@
 <div class="task-panel card">
   @if (editMode) {
-    <h3>Editar paso</h3>
+    <h3 class="task-title">Editar paso</h3>
   }
-  <p class="nombre-step">{{ step.nombreStep }}</p>
-  <p class="tipo">Acción: {{ tipoAccionLabel(step.tipoAccion) }}</p>
-  <p class="reparticion">Repartición: {{ reparticionNombre || step.reparticionId }}</p>
+  <div class="circuito-info">
+    <span class="ci-name">{{ step.nombreStep }}</span>
+    <span class="ci-chip">{{ tipoAccionLabel(step.tipoAccion) }}</span>
+  </div>
+  <p class="ci-reparticion">Repartición: <strong>{{ reparticionNombre || step.reparticionId }}</strong></p>
 
   @switch (tipo) {
     @case ('FORM') {

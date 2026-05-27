@@ -15,6 +15,7 @@ import {
 } from '../../core/services/expediente.service';
 import { LayoutStateService } from '../../core/services/layout-state.service';
 import { PermissionService } from '../../core/services/permission.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ActoAdministrativo, CircuitoAdministrativo, Expediente, HistorialStep, PlantillaActo, Reparticion } from '../../core/models';
 import { TaskExecutionComponent } from './task-execution.component';
 import { CircuitoProgressComponent } from '../../shared/circuito-progress/circuito-progress.component';
@@ -37,6 +38,7 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
   private readonly plantillaService = inject(PlantillaService);
   private readonly http = inject(HttpClient);
   private readonly layoutState = inject(LayoutStateService);
+  private readonly auth = inject(AuthService);
   readonly perm = inject(PermissionService);
 
   expediente: Expediente | null = null;
@@ -46,9 +48,12 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
   reparticiones: Reparticion[] = [];
   stepConfig: Record<string, unknown> | undefined;
   archivos: FileMetadata[] = [];
-  activeTab: 'historial' | 'documentos' | 'datos' | 'actos' | 'diagrama' = 'historial';
+  activeTab: 'pasos' | 'documentos' | 'datos' | 'actos' | 'diagrama' = 'pasos';
   actionError = '';
   completing = false;
+  revisionTab: 'original' | 'revision' = 'revision';
+  reEditando = false;
+  reEditMotivo = '';
 
   actos: ActoAdministrativo[] = [];
   plantillas: PlantillaActo[] = [];
@@ -207,10 +212,69 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
 
   selectStep(h: HistorialStep): void {
     this.selectedStep = this.selectedStep?.stepOrder === h.stepOrder ? null : h;
+    this.reEditando = false;
+    this.reEditMotivo = '';
+    this.revisionTab = 'revision';
   }
 
   canEditStep(step: HistorialStep): boolean {
     return this.perm.canMutateExpediente() && this.perm.canActOnReparticion(step.reparticionId);
+  }
+
+  canReEditarStep(step: HistorialStep): boolean {
+    return this.perm.canAccessAdmin() && step.estado === 'completado';
+  }
+
+  canAprobarRevision(step: HistorialStep): boolean {
+    if (!step.pendienteAprobacionRevision) return false;
+    const user = this.auth.currentUser();
+    return (user?.reparticionesIds ?? []).includes(step.reparticionId);
+  }
+
+  iniciarReEdicion(): void {
+    this.reEditando = true;
+    this.reEditMotivo = '';
+    this.revisionTab = 'revision';
+  }
+
+  cancelarReEdicion(): void {
+    this.reEditando = false;
+    this.reEditMotivo = '';
+  }
+
+  onReEditado(payload: Record<string, unknown>): void {
+    if (!this.expediente || !this.selectedStep) return;
+    const body: Record<string, unknown> = { motivo: this.reEditMotivo };
+    const formData = payload['formData'] as Record<string, unknown> | undefined;
+    if (formData && Object.keys(formData).length > 0) body['formData'] = formData;
+    if (payload['archivosIds']) body['archivosIds'] = payload['archivosIds'];
+    this.actionError = '';
+    this.expedienteService.reEditar(this.expediente.id, this.selectedStep.stepOrder, body).subscribe({
+      next: (exp) => {
+        this.expediente = exp;
+        this.reEditando = false;
+        this.reEditMotivo = '';
+        this.revisionTab = 'revision';
+        this.load(exp.id);
+      },
+      error: (e) => {
+        this.actionError = e.error?.message || 'No se pudo re-editar el paso';
+      },
+    });
+  }
+
+  aprobarRevision(): void {
+    if (!this.expediente || !this.selectedStep) return;
+    this.actionError = '';
+    this.expedienteService.aprobarRevision(this.expediente.id, this.selectedStep.stepOrder).subscribe({
+      next: (exp) => {
+        this.expediente = exp;
+        this.load(exp.id);
+      },
+      error: (e) => {
+        this.actionError = e.error?.message || 'No se pudo aprobar la revisión';
+      },
+    });
   }
 
   getStepConfig(stepOrder: number): Record<string, unknown> | undefined {
@@ -252,6 +316,11 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
 
   archivosDelStep(stepOrder: number): FileMetadata[] {
     return this.archivos.filter((f) => f.stepOrder === stepOrder);
+  }
+
+  archivosOriginalesDelStep(step: HistorialStep): FileMetadata[] {
+    const ids = step.archivosIdsOriginal ?? [];
+    return this.archivos.filter((f) => ids.includes(f.id));
   }
 
   pasosCompletados(): number {

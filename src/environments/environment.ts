@@ -3,4 +3,5 @@ export const environment = {
   apiUrl: 'http://localhost:8080/api',
   enableDemoLogin: true,
   demoPassword: 'demo123',
+  enableServerWarmup: false,
 };

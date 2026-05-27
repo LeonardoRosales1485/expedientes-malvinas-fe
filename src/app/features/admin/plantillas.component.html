@@ -1,5 +1,5 @@
 <h1 class="page-title">Plantillas de actos administrativos</h1>
-<p class="subtitle">Decretos, resoluciones y disposiciones con placeholders automáticos</p>
+<p class="subtitle">Decretos, resoluciones, notas y disposiciones — editor visual</p>
 
 <button class="btn-primary" (click)="nueva()">+ Nueva plantilla</button>
 
@@ -11,6 +11,10 @@
       <input type="text" [(ngModel)]="editing['nombre']" placeholder="Ej. Decreto de habilitación" />
     </label>
     <label>
+      Descripción
+      <input type="text" [(ngModel)]="editing['descripcion']" placeholder="Breve descripción del uso" />
+    </label>
+    <label>
       Tipo de acto
       <select [(ngModel)]="editing['tipoActo']">
         @for (t of TIPOS; track t) {
@@ -19,15 +23,23 @@
       </select>
     </label>
     <label>
+      Variables disponibles
+      <div class="var-buttons">
+        <button type="button" class="var-btn" (click)="insertVariable('numeroExpediente')">{{ '{{numeroExpediente}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('tipoTramite')">{{ '{{tipoTramite}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('objeto')">{{ '{{objeto}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('iniciador')">{{ '{{iniciador}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('fechaInicio')">{{ '{{fechaInicio}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('lugar')">{{ '{{lugar}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('fecha')">{{ '{{fecha}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('destinatario')">{{ '{{destinatario}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('firmante')">{{ '{{firmante}}' }}</button>
+        <button type="button" class="var-btn" (click)="insertVariable('cargo')">{{ '{{cargo}}' }}</button>
+      </div>
+    </label>
+    <label>
       Cuerpo HTML
-      <p class="hint">Placeholders disponibles:
-        <code>{{ '{{numeroExpediente}}' }}</code>
-        <code>{{ '{{tipoTramite}}' }}</code>
-        <code>{{ '{{objeto}}' }}</code>
-        <code>{{ '{{iniciador}}' }}</code>
-        <code>{{ '{{fechaInicio}}' }}</code>
-      </p>
-      <textarea [(ngModel)]="editing['cuerpoHtml']" rows="12" class="html-editor"></textarea>
+      <div #quillContainer class="quill-editor"></div>
     </label>
     <div class="editor-actions">
       <button class="btn-primary" (click)="guardar()" [disabled]="saving">

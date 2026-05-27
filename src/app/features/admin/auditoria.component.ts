@@ -16,11 +16,22 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   private readonly auditoriaService = inject(AuditoriaService);
 
   entries: AuditLogEntry[] = [];
-  filtered: AuditLogEntry[] = [];
   search = '';
   loading = false;
   lastUpdated: Date | null = null;
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+  get filtered(): AuditLogEntry[] {
+    const q = this.search.trim().toLowerCase();
+    if (!q) return this.entries;
+    return this.entries.filter(
+      (e) =>
+        e.userNombre.toLowerCase().includes(q) ||
+        e.userEmail.toLowerCase().includes(q) ||
+        e.action.toLowerCase().includes(q) ||
+        (e.expedienteNumero ?? '').toLowerCase().includes(q),
+    );
+  }
 
   ngOnInit(): void {
     this.load();
@@ -38,28 +49,8 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         this.entries = e;
         this.lastUpdated = new Date();
         this.loading = false;
-        this.applyFilter();
       },
       error: () => (this.loading = false),
     });
-  }
-
-  onSearch(): void {
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const q = this.search.trim().toLowerCase();
-    if (!q) {
-      this.filtered = this.entries;
-      return;
-    }
-    this.filtered = this.entries.filter(
-      (e) =>
-        e.userNombre.toLowerCase().includes(q) ||
-        e.userEmail.toLowerCase().includes(q) ||
-        e.action.toLowerCase().includes(q) ||
-        (e.expedienteNumero ?? '').toLowerCase().includes(q),
-    );
   }
 }

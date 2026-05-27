@@ -1,171 +1,438 @@
 @if (!showEditor) {
-  <h1 class="page-title">Circuitos administrativos</h1>
-  <div class="toolbar-row">
-    <div class="filters card" style="margin-bottom:0; flex:1">
-      <label>
-        Buscar
-        <input type="search" [(ngModel)]="searchText" placeholder="Nombre o descripción…" />
-      </label>
-    </div>
-    <button type="button" class="btn-primary" (click)="nuevo()">+ Nuevo circuito</button>
+  <!-- ═══════════════ LISTA DE CIRCUITOS ═══════════════ -->
+  <div class="list-header">
+    <h1 class="page-title">Tipos de expedientes</h1>
+    <button class="btn-primary" (click)="nuevo()">+ Nuevo tipo de expediente</button>
   </div>
-  @for (c of filteredCircuitos; track c.id) {
-    <div class="card wf-card">
-      <div class="wf-head">
-        <h3>{{ c.nombre }} <small>v{{ c.version }}</small></h3>
-        <span class="badge" [class.inactive]="!c.activo">{{ c.activo ? 'Activo' : 'Inactivo' }}</span>
-      </div>
-      <p>{{ c.descripcion }}</p>
-      <p class="meta">{{ c.steps.length }} pasos</p>
-      <ul class="steps-preview">
-        @for (s of c.steps; track s.order) {
-          <li>{{ s.order }}. {{ s.nombre }} — {{ tipoAccionLabel(s.tipoAccion) }} ({{ repNombre(s.reparticionId) }})</li>
+
+  <div class="filters card">
+    <label>
+      Buscar tipo de expediente
+      <input type="text" placeholder="Buscar tipo de expediente…" [(ngModel)]="searchText" />
+    </label>
+    <label>
+      Modalidad
+      <select [(ngModel)]="filterModalidad">
+        <option value="">Todas las modalidades</option>
+        @for (m of modalidades; track m) {
+          <option [value]="m">{{ modalidadInfo(m).icon }} {{ m }}</option>
         }
-      </ul>
-      <div class="actions">
-        <button type="button" class="btn-secondary" (click)="editar(c)">Editar</button>
-        <button type="button" class="btn-danger" (click)="eliminar(c)">Eliminar</button>
+      </select>
+    </label>
+  </div>
+
+  @if (error) {
+    <p class="error-msg">{{ error }}</p>
+  }
+
+  <div class="card table-wrap">
+    <table class="ct-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Modalidad</th>
+          <th>Pasos</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (filteredCircuitos.length === 0) {
+          <tr><td colspan="4" class="empty">Sin circuitos. Creá el primero.</td></tr>
+        }
+        @for (c of filteredCircuitos; track c.id) {
+          <tr>
+            <td>
+              <strong>{{ c.nombre }}</strong>
+              <span class="version-badge">v{{ c.version }}</span>
+              @if (c.generico) { <span class="chip chip--generico">Genérico</span> }
+            </td>
+            <td>
+              <span class="chip" [class.chip--libre]="c.modalidad === 'LIBRE'"
+                    [class.chip--orientativa]="c.modalidad === 'ORIENTATIVA'"
+                    [class.chip--restrictiva]="c.modalidad === 'RESTRICTIVA'">
+                {{ modalidadInfo(c.modalidad).icon }} {{ c.modalidad }}
+              </span>
+            </td>
+            <td>{{ stepsLabel(c.modalidad, c.steps.length) }}</td>
+            <td class="actions">
+              <button class="btn-secondary small" (click)="editar(c)">Editar</button>
+              <button class="btn-danger small" (click)="eliminarCircuito(c)">Eliminar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+} @else {
+  <!-- ═══════════════ WIZARD EDITOR ═══════════════ -->
+
+  <div class="wizard-header">
+    <div class="wizard-steps">
+      <div class="w-step" [class.active]="wizardStep === 1" [class.done]="wizardStep > 1">
+        <span class="w-step-num">1</span>
+        <span class="w-step-label">Datos del expediente</span>
+      </div>
+      <div class="w-step" [class.active]="wizardStep === 2" [class.done]="wizardStep > 2">
+        <span class="w-step-num">2</span>
+        <span class="w-step-label">{{ stepsLabelPlural(editing!.modalidad) }}</span>
+      </div>
+      <div class="w-step" [class.active]="wizardStep === 3">
+        <span class="w-step-num">3</span>
+        <span class="w-step-label">Vista final</span>
+      </div>
+    </div>
+  </div>
+
+  @if (error) {
+    <p class="error-msg">{{ error }}</p>
+  }
+
+  <!-- ── PASO 1: DATOS DEL CIRCUITO ── -->
+  @if (wizardStep === 1) {
+    <div class="wizard-body wizard-body--centered">
+      <div class="form-section">
+        <label class="form-field">
+          <span class="form-field-label">Nombre del tipo de expediente</span>
+          <input type="text" [(ngModel)]="editing!.nombre" placeholder="Ej: Habilitación Comercial" />
+        </label>
+        <label class="form-field">
+          <span class="form-field-label">Descripción</span>
+          <textarea [(ngModel)]="editing!.descripcion" rows="3" placeholder="Breve descripción del trámite"></textarea>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="editing!.activo" />
+          Tipo de expediente activo
+        </label>
+      </div>
+
+      <div class="form-section">
+        <label class="section-label">Modalidad del expediente</label>
+        <div class="modalidad-grid">
+          @for (m of ['RESTRICTIVA', 'ORIENTATIVA', 'LIBRE']; track m) {
+            @let info = modalidadInfo($any(m));
+            <div class="modalidad-card"
+                 [class.selected]="editing!.modalidad === m"
+                 [class.disabled]="editing!.generico && m !== 'LIBRE'"
+                 (click)="seleccionarModalidad($any(m))">
+              <div class="modalidad-icon">{{ info.icon }}</div>
+              <div class="modalidad-name">{{ m }}</div>
+              <div class="modalidad-desc">{{ info.desc }}</div>
+              @if (editing!.modalidad === m) {
+                <div class="modalidad-check">✓</div>
+              }
+            </div>
+          }
+        </div>
+        @if (editing!.generico) {
+          <p class="hint">Los circuitos genéricos usan modalidad LIBRE.</p>
+        }
+
+        @if (editing!.modalidad === 'ORIENTATIVA') {
+          <label class="form-field">
+            <span class="form-field-label">Circuito de referencia para recomendaciones</span>
+            <div class="autocomplete">
+              <input type="text" [(ngModel)]="circuitoRecomendacionSearch"
+                     (input)="circuitoRecomendacionSearch = $any($event.target).value"
+                     placeholder="Buscá por nombre o nº de catálogo…" />
+              @if (circuitosRecomendacionFiltrados.length > 0 && circuitoRecomendacionSearch.length > 0) {
+                <div class="autocomplete-dropdown">
+                  @for (c of circuitosRecomendacionFiltrados; track c.id) {
+                    <div class="autocomplete-item" (click)="seleccionarCircuitoRecomendacion(c.id)">
+                      <strong>{{ c.nombre }}</strong>
+                      @if (c.numeroCatalogo) { <span class="chip chip--generico">Nº {{ c.numeroCatalogo }}</span> }
+                    </div>
+                  }
+                </div>
+              }
+              @if (circuitosRecomendacionFiltrados.length === 0 && circuitoRecomendacionSearch.length > 0) {
+                <div class="autocomplete-dropdown">
+                  <div class="autocomplete-item disabled">Sin resultados</div>
+                </div>
+              }
+            </div>
+            @if (!editing!.circuitoRecomendacionId) {
+              <small class="field-hint">Elegí un circuito existente para usar sus pasos como guía.</small>
+            }
+          </label>
+        }
       </div>
     </div>
   }
-} @else if (editing) {
-  <div class="circuito-editor-shell">
-  <div class="editor-topbar">
-    <h1 class="page-title">{{ editing.id ? 'Editar' : 'Nuevo' }} circuito administrativo</h1>
-    <div class="editor-topbar-actions">
-      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
-      <button type="button" class="btn-primary" (click)="guardar()">Guardar</button>
-    </div>
-  </div>
-  @if (error) { <p class="error">{{ error }}</p> }
 
-  <div class="circuito-editor-layout">
-    <aside class="preview-panel card">
-      <h2 class="panel-title">Vista previa</h2>
-      <p class="panel-subtitle">{{ editing.nombre || 'Sin nombre' }}</p>
-      <div class="accordion-list">
-        @for (step of editing.steps; track step.order) {
-          <div class="accordion-item" [class.expanded]="isStepExpanded(step.order)">
-            <button type="button" class="accordion-header" (click)="toggleStepExpanded(step.order)">
-              <span class="step-num">{{ step.order + 1 }}</span>
-              <span class="step-summary">
-                <strong>{{ step.nombre || 'Paso sin nombre' }}</strong>
-                <small>{{ tipoAccionLabel(step.tipoAccion) }} · {{ repNombre(step.reparticionId) }}</small>
+  <!-- ── PASO 2: CONFIGURACIÓN DE PASOS ── -->
+  @if (wizardStep === 2) {
+    <div class="wizard-body">
+      <div class="steps-toolbar">
+        <span class="steps-count">{{ stepsLabel(editing!.modalidad, editing!.steps.length) }}</span>
+        <button class="btn-primary small" (click)="agregarPaso()">+ Agregar {{ termSteps(editing!.modalidad) }}</button>
+      </div>
+
+      <div cdkDropList class="steps-list" (cdkDropListDropped)="dropStep($event)">
+        @for (step of editing!.steps; track step.order; let i = $index) {
+          <div class="step-card" cdkDrag>
+            <div class="step-card-header">
+              <span class="drag-handle" cdkDragHandle>☰</span>
+              <span class="step-order">{{ i + 1 }}</span>
+              <span class="step-name">{{ step.nombre }}</span>
+              <span class="chip step-chip"
+                    [class.chip--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
+                    [class.chip--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
+                    [class.chip--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
+                {{ tipoAccionIcon(step.tipoAccion) }} {{ tipoAccionLabel(step.tipoAccion) }}
               </span>
-              <span class="chevron">{{ isStepExpanded(step.order) ? '▼' : '▶' }}</span>
-            </button>
-            @if (isStepExpanded(step.order)) {
-              <div class="accordion-body">
-                <app-circuito-step-preview [step]="step" [reparticiones]="reparticiones" />
-              </div>
-            }
+              <span class="rep-badge" [title]="repNombre(step.reparticionId)">{{ repSigla(step.reparticionId) }}</span>
+              <span class="spacer"></span>
+              <button class="btn-icon" (click)="openDrawer(i)" title="Editar paso">✏️</button>
+              <button class="btn-icon btn-icon--danger" (click)="eliminarPaso(i)" title="Eliminar paso">🗑️</button>
+            </div>
           </div>
         }
       </div>
-    </aside>
+    </div>
+  }
+}
 
-    <section class="form-panel card">
-      <h2 class="panel-title">Configuración</h2>
-      <label>Nombre <input [(ngModel)]="editing.nombre" /></label>
-      <label>Descripción <textarea [(ngModel)]="editing.descripcion" rows="2"></textarea></label>
-      <label><input type="checkbox" [(ngModel)]="editing.activo" /> Activo</label>
+<!-- ═══════════════ DRAWER ═══════════════ -->
+@if (drawerOpen && editingStep) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+  <div class="drawer">
+    <div class="drawer-header">
+      <button class="btn-icon" (click)="closeDrawer()">← Volver</button>
+      <h3>Editando: {{ editingStep.nombre }}</h3>
+    </div>
 
-      <h3>Pasos del circuito</h3>
-      @for (step of editing.steps; track step.order; let i = $index) {
-        <div class="step-block">
-          <div class="step-head">
-            <strong>Paso {{ step.order }}</strong>
-            @if (editing.steps.length > 1) {
-              <button type="button" class="btn-danger small" (click)="eliminarPaso(i)">Quitar</button>
-            }
-          </div>
-          <label>Nombre <input [(ngModel)]="step.nombre" /></label>
-          <label>Repartición
-            <select [(ngModel)]="step.reparticionId">
-              @for (r of reparticiones; track r.id) {
-                <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
-              }
-            </select>
-          </label>
-          <label>Tipo de acción
-            <select [(ngModel)]="step.tipoAccion" (ngModelChange)="onTipoChange(step)">
-              @for (t of tiposAccion; track t) {
-                <option [value]="t">{{ tipoAccionLabel(t) }}</option>
-              }
-            </select>
-          </label>
-          <label>Plazo (días hábiles) <input type="number" [(ngModel)]="step.plazoDias" min="1" /></label>
-          <label>Tolerancia de vencimiento (%) <input type="number" [(ngModel)]="step.toleranciaPorcentaje" min="0" max="200" placeholder="50" /></label>
-          <label>Siguiente paso (orden) <input type="number" [(ngModel)]="step.siguienteStep" /></label>
+    <div class="drawer-tabs">
+      <button class="drawer-tab" [class.active]="drawerTab === 'basicos'" (click)="drawerTab = 'basicos'">Datos básicos</button>
+      <button class="drawer-tab" [class.active]="drawerTab === 'accion'" (click)="drawerTab = 'accion'">Acción</button>
+      <button class="drawer-tab" [class.active]="drawerTab === 'flujo'" (click)="drawerTab = 'flujo'">Flujo</button>
+    </div>
 
-          @if (step.tipoAccion === 'APPROVAL') {
-            <label>Aprobaciones necesarias
-              <input type="number" min="1" [ngModel]="step.configuracion?.['aprobacionesNecesarias'] ?? 1"
-                (ngModelChange)="setAprobacionesNecesarias(step, +$event)" />
-            </label>
-            <fieldset class="sub-block">
-              <legend>Reparticiones que pueden aprobar</legend>
-              @for (r of reparticiones; track r.id) {
-                <label class="inline">
-                  <input type="checkbox"
-                    [checked]="getReparticionesAprobadoras(step).includes(r.id)"
-                    (change)="toggleReparticionAprobadora(step, r.id, $any($event.target).checked)" />
-                  {{ r.sigla }} — {{ r.nombre }}
-                </label>
-              }
-            </fieldset>
-            <fieldset class="sub-block">
-              <legend>Roles permitidos</legend>
-              @for (role of allRoles; track role) {
-                <label class="inline">
-                  <input type="checkbox"
-                    [checked]="getRolesPermitidos(step).includes(role)"
-                    (change)="toggleRolPermitido(step, role, $any($event.target).checked)" />
-                  {{ roleLabel(role) }}
-                </label>
-              }
-              <p class="hint">Si no marca ninguno, se permiten todos los roles que puedan actuar en el paso.</p>
-            </fieldset>
-          }
-          @if (step.tipoAccion === 'FILE_UPLOAD') {
-            <label>Mín. archivos
-              <input type="number" min="1" [ngModel]="step.configuracion?.['minArchivos'] ?? 1"
-                (ngModelChange)="setMinArchivos(step, +$event)" />
-            </label>
-          }
-          @if (step.tipoAccion === 'FORM') {
-            <h4>Campos del formulario</h4>
-            @for (field of getFormFields(step); track $index; let fi = $index) {
-              <div class="field-row">
-                <label>Nombre del campo
-                  <input [ngModel]="field.nombre" (ngModelChange)="updateFormField(step, fi, { nombre: $event })" />
-                </label>
-                <label>Tipo
-                  <select [ngModel]="field.tipo" (ngModelChange)="updateFormField(step, fi, { tipo: $event })">
-                    @for (t of formFieldTypes; track t) {
-                      <option [value]="t">{{ formFieldTypeLabel(t) }}</option>
-                    }
-                  </select>
-                </label>
-                <label class="inline">
-                  <input type="checkbox" [ngModel]="field.requerido"
-                    (ngModelChange)="updateFormField(step, fi, { requerido: $event })" />
-                  Obligatorio
-                </label>
-                @if (field.tipo === 'select') {
-                  <label>Opciones (separadas por coma)
-                    <input [ngModel]="opcionesText(step, fi)" (ngModelChange)="setOpcionesText(step, fi, $event)" />
-                  </label>
+    <div class="drawer-body">
+      <!-- Tab: Datos básicos -->
+      @if (drawerTab === 'basicos') {
+        <label>
+          Nombre del {{ termSteps(editing!.modalidad) }}
+          <input type="text" [(ngModel)]="editingStep.nombre" placeholder="Ej: Recepción ME" />
+        </label>
+        <label>
+          Repartición responsable
+          <div class="autocomplete">
+            <input type="text" [(ngModel)]="repSearchText" (input)="repSearchText = $any($event.target).value"
+                   placeholder="Buscá por nombre o sigla…" />
+            @if (filteredReparticiones.length > 0 && repSearchText.length > 0) {
+              <div class="autocomplete-dropdown">
+                @for (r of filteredReparticiones; track r.id) {
+                  <div class="autocomplete-item" (click)="selectReparticion(r.id, r.sigla + ' — ' + r.nombre)">
+                    <strong>{{ r.sigla }}</strong> — {{ r.nombre }}
+                  </div>
                 }
-                <button type="button" class="btn-danger small" (click)="removeFormField(step, fi)">Quitar campo</button>
               </div>
             }
-            <button type="button" class="btn-secondary small" (click)="addFormField(step)">+ Campo</button>
-          }
+          </div>
+        </label>
+        <div class="row-fields">
+          <label title="Cantidad de días hábiles para completar este paso">
+            Plazo (días)
+            <input type="number" [(ngModel)]="editingStep.plazoDias" min="1" />
+          </label>
+          <label title="Porcentaje adicional de tiempo antes de marcar como vencido">
+            Tolerancia %
+            <input type="number" [(ngModel)]="editingStep.toleranciaPorcentaje" min="0" max="200" placeholder="50" />
+          </label>
         </div>
       }
-      <button type="button" class="btn-secondary" (click)="agregarPaso()">+ Agregar paso</button>
-    </section>
+
+      <!-- Tab: Acción -->
+      @if (drawerTab === 'accion') {
+        <label class="section-label">Tipo de acción</label>
+        <div class="tipo-chips">
+          @for (t of tiposAccion; track t) {
+            <button class="tipo-chip"
+                    [class.active]="editingStep.tipoAccion === t"
+                    [class.chip--blue]="t === 'FORM'"
+                    [class.chip--amber]="t === 'FILE_UPLOAD'"
+                    [class.chip--emerald]="t === 'APPROVAL'"
+                    title="Define qué debe hacer el usuario en este paso"
+                    (click)="editingStep!.tipoAccion = t; onTipoChange()">
+              {{ tipoAccionIcon(t) }} {{ tipoAccionLabel(t) }}
+            </button>
+          }
+        </div>
+
+        <!-- FORM -->
+        @if (editingStep.tipoAccion === 'FORM') {
+          <div class="form-fields-editor">
+            <label class="section-label">Campos del formulario</label>
+            @for (f of getFormFields(); track $index; let fi = $index) {
+              <div class="form-field-row">
+                <input type="text" class="field-name" [value]="f.nombre"
+                       (input)="updateFormField(fi, { nombre: $any($event.target).value })" placeholder="Nombre del campo" />
+                <select class="field-type" [value]="f.tipo"
+                        (change)="updateFormField(fi, { tipo: $any($event.target).value })">
+                  @for (ft of formFieldTypes; track ft) {
+                    <option [value]="ft">{{ formFieldTypeLabel(ft) }}</option>
+                  }
+                </select>
+                <label class="field-req">
+                  <input type="checkbox" [checked]="f.requerido"
+                         (change)="updateFormField(fi, { requerido: $any($event.target).checked })" />
+                  Req.
+                </label>
+                @if (f.tipo === 'select') {
+                  <input type="text" class="field-opts" [value]="opcionesText(fi)"
+                         (input)="setOpcionesText(fi, $any($event.target).value)" placeholder="op1, op2" />
+                }
+                <button class="btn-icon btn-icon--danger small" (click)="removeFormField(fi)" title="Quitar campo">×</button>
+              </div>
+            }
+            <button class="btn-secondary small" (click)="addFormField()">+ Campo</button>
+
+            <div class="field-preview">
+              <label class="section-label">Vista previa</label>
+              <app-circuito-step-preview [fields]="getFormFields()" />
+            </div>
+          </div>
+        }
+
+        <!-- FILE_UPLOAD -->
+        @if (editingStep.tipoAccion === 'FILE_UPLOAD') {
+          <label title="Cantidad mínima de archivos requerida">
+            Min. archivos
+            <input type="number" [value]="editingStep.configuracion?.['minArchivos'] ?? 1"
+                   (input)="setMinArchivos(+$any($event.target).value)" min="0" />
+          </label>
+          <label title="Cantidad máxima de archivos permitida (opcional)">
+            Max. archivos
+            <input type="number" [value]="editingStep.configuracion?.['maxArchivos'] ?? ''"
+                   (input)="setMaxArchivos(+$any($event.target).value || 0)" min="0" />
+          </label>
+          <label title="Extensiones de archivo permitidas, separadas por coma">
+            Extensiones permitidas
+            <input type="text" [value]="getExtensiones()"
+                   (input)="setExtensiones($any($event.target).value)" placeholder=".pdf, .jpg, .png" />
+          </label>
+        }
+
+        <!-- APPROVAL -->
+        @if (editingStep.tipoAccion === 'APPROVAL') {
+          <label>
+            Aprobaciones necesarias
+            <input type="number" [value]="editingStep.configuracion?.['aprobacionesNecesarias'] ?? 1"
+                   (input)="setAprobacionesNecesarias(+$any($event.target).value)" min="1" />
+          </label>
+          <label class="section-label">Reparticiones aprobadoras</label>
+          <div class="checkbox-grid">
+            @for (r of reparticiones; track r.id) {
+              <label class="checkbox-label">
+                <input type="checkbox" [checked]="getReparticionesAprobadoras().includes(r.id)"
+                       (change)="toggleReparticionAprobadora(r.id, $any($event.target).checked)" />
+                {{ r.sigla }} — {{ r.nombre }}
+              </label>
+            }
+          </div>
+          <label class="section-label">Roles permitidos</label>
+          <div class="checkbox-grid">
+            @for (role of allRoles; track role) {
+              <label class="checkbox-label">
+                <input type="checkbox" [checked]="getRolesPermitidos().includes(role)"
+                       (change)="toggleRolPermitido(role, $any($event.target).checked)" />
+                {{ roleLabel(role) }}
+              </label>
+            }
+          </div>
+        }
+      }
+
+      <!-- Tab: Flujo -->
+      @if (drawerTab === 'flujo') {
+        <label title="Define el siguiente {{ termSteps(editing!.modalidad) }} en el flujo (opcional)">
+          Siguiente {{ termSteps(editing!.modalidad) }}
+          <select [(ngModel)]="editingStep.siguienteStep">
+            <option [ngValue]="null">— Predeterminado (siguiente en orden) —</option>
+            @for (s of editing!.steps; track s.order) {
+              <option [ngValue]="s.order + 1">{{ termSteps(editing!.modalidad) | titlecase }} {{ s.order + 1 }} — {{ s.nombre }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-secondary" (click)="closeDrawer()">Cancelar</button>
+      <button class="btn-primary" (click)="guardarPasoDrawer()">Guardar cambios</button>
+    </div>
   </div>
+}
+
+<!-- ═══════════════ MODAL VISTA FINAL ═══════════════ -->
+@if (showModal && editing) {
+  <div class="modal-overlay" (click)="closeModal()"></div>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Vista previa del circuito</h2>
+      <button class="btn-icon" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-header">
+        <span class="preview-title">{{ editing.nombre }}</span>
+        <span class="chip"
+              [class.chip--libre]="editing.modalidad === 'LIBRE'"
+              [class.chip--orientativa]="editing.modalidad === 'ORIENTATIVA'"
+              [class.chip--restrictiva]="editing.modalidad === 'RESTRICTIVA'">
+          {{ modalidadInfo(editing.modalidad).icon }} {{ editing.modalidad }}
+        </span>
+        @if (editing.activo) { <span class="chip chip--active">Activo</span> }
+      </div>
+
+      <div class="preview-steps">
+        @for (step of editing.steps; track step.order; let i = $index) {
+          <div class="preview-step-card"
+               [class.border--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
+               [class.border--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
+               [class.border--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
+            <div class="preview-step-left">
+              <span class="preview-step-order">{{ i + 1 }}</span>
+            </div>
+            <div class="preview-step-body">
+              <div class="preview-step-name">{{ step.nombre }}</div>
+              <div class="preview-step-meta">
+                <span>{{ repNombre(step.reparticionId) }}</span>
+                <span class="dot">·</span>
+                <span>{{ step.plazoDias }} día{{ step.plazoDias !== 1 ? 's' : '' }}</span>
+                <span class="chip preview-chip"
+                      [class.chip--blue]="tipoAccionColor(step.tipoAccion) === 'blue'"
+                      [class.chip--amber]="tipoAccionColor(step.tipoAccion) === 'amber'"
+                      [class.chip--emerald]="tipoAccionColor(step.tipoAccion) === 'emerald'">
+                  {{ tipoAccionIcon(step.tipoAccion) }} {{ tipoAccionLabel(step.tipoAccion) }}
+                </span>
+              </div>
+            </div>
+          </div>
+          @if (i < editing.steps.length - 1) {
+            <div class="preview-arrow">↓</div>
+          }
+        }
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">← Volver</button>
+      <button class="btn-primary" (click)="confirmarGuardar()">Guardar circuito</button>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════ WIZARD FOOTER (fijo abajo) ═══════════════ -->
+@if (showEditor && !drawerOpen) {
+  <div class="wizard-footer">
+    <span class="spacer"></span>
+    @if (wizardStep > 1) {
+      <button class="btn-secondary" (click)="wizardVolver()">← Volver</button>
+    }
+    @if (wizardStep < 3) {
+      <button class="btn-primary" (click)="wizardSiguiente()">
+        {{ wizardStep === 1 ? 'Siguiente →' : 'Revisar y guardar →' }}
+      </button>
+    }
   </div>
 }

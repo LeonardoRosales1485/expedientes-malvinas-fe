@@ -1,6 +1,7 @@
 export type { DemoUser } from './demo-user';
-export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO';
+export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO' | 'CARATULADOR';
 export type TipoAccion = 'FILE_UPLOAD' | 'FORM' | 'APPROVAL';
+export type ModalidadCircuito = 'RESTRICTIVA' | 'ORIENTATIVA' | 'LIBRE';
 
 export interface AuthResponse {
   token: string;
@@ -75,6 +76,9 @@ export interface CircuitoAdministrativo {
   steps: PasoCircuito[];
   activo: boolean;
   numeroCatalogo?: number;
+  modalidad: ModalidadCircuito;
+  generico?: boolean;
+  circuitoRecomendacionId?: string;
 }
 
 export interface NotificacionLog {
@@ -137,6 +141,12 @@ export interface HistorialStep {
   usuariosResponsables?: string[];
   responsablesNombres?: Record<string, string>;
   delegaciones?: Delegacion[];
+  datosFormularioOriginal?: Record<string, unknown>;
+  archivosIdsOriginal?: string[];
+  pendienteAprobacionRevision?: boolean;
+  revisionMotivo?: string;
+  revisionAdminNombre?: string;
+  revisionFecha?: string;
 }
 
 export interface Notification {
@@ -158,8 +168,12 @@ export interface FormFieldDef {
 export interface PlantillaActo {
   id?: string;
   nombre: string;
+  descripcion?: string;
+  reparticionId?: string;
   tipoActo: string;
   cuerpoHtml: string;
+  variablesDisponibles?: string[];
+  createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }

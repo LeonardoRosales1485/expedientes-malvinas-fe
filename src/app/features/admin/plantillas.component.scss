@@ -16,7 +16,7 @@
     color: var(--mma-navy);
     margin-bottom: 0.75rem;
 
-    input, select, textarea {
+    input, select {
       padding: 0.45rem 0.6rem;
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -25,31 +25,36 @@
   }
 }
 
-.html-editor {
-  font-family: monospace;
-  font-size: 0.82rem;
-  width: 100%;
-  resize: vertical;
+.quill-editor {
+  min-height: 250px;
+  background: #fff;
+  border-radius: 8px;
 }
 
-.hint {
-  font-size: 0.75rem;
-  color: var(--mma-text-muted);
-  font-weight: 400;
-  margin: 0.1rem 0;
+.var-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
 
-  code {
-    background: #f0f4f8;
-    border-radius: 3px;
-    padding: 0.1rem 0.3rem;
-    font-size: 0.75rem;
-  }
+.var-btn {
+  background: #f0f4f8;
+  border: 1px solid #d0d8e0;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: monospace;
+  cursor: pointer;
+  color: var(--mma-navy);
+  transition: background 0.15s;
+
+  &:hover { background: #dce4ec; }
 }
 
 .editor-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 .table-wrap { padding: 0; overflow-x: auto; margin-top: 1rem; }
@@ -93,3 +98,5 @@
 
   &.small { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
 }
+
+:host ::ng-deep .ql-editor { min-height: 200px; font-size: 0.9rem; }

@@ -14,13 +14,17 @@ export class PermissionService {
     return this.auth.isAdmin();
   }
 
+  isCaratulador(): boolean {
+    return this.hasRole('CARATULADOR');
+  }
+
   isJefeDeArea(): boolean {
     return this.auth.currentUser()?.esJefeDeArea ?? false;
   }
 
   isViewerOnly(): boolean {
     const roles = this.auth.currentUser()?.roles ?? [];
-    return roles.includes('VIEWER') && !roles.includes('USER') && !roles.includes('ADMIN');
+    return roles.includes('VIEWER') && !roles.includes('USER') && !roles.includes('ADMIN') && !roles.includes('CARATULADOR');
   }
 
   canAccessAdmin(): boolean {

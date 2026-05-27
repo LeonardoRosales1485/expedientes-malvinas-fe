@@ -122,6 +122,14 @@ export class ExpedienteService {
     return this.http.put<Expediente>(`${this.base}/${id}/steps/${stepOrder}/editar`, body);
   }
 
+  reEditar(id: string, stepOrder: number, body: Record<string, unknown>) {
+    return this.http.put<Expediente>(`${this.base}/${id}/steps/${stepOrder}/reeditar`, body);
+  }
+
+  aprobarRevision(id: string, stepOrder: number) {
+    return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/aprobar-revision`, {});
+  }
+
   listarArchivados() {
     return this.http.get<Expediente[]>(`${this.base}/archivo`);
   }
