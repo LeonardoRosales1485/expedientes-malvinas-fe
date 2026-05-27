@@ -25,6 +25,10 @@
     <p class="error-msg">{{ error }}</p>
   }
 
+  @if (loading) {
+    <app-loading-spinner message="Cargando tipos de expediente..." />
+  }
+
   <div class="card table-wrap">
     <table class="ct-table">
       <thead>

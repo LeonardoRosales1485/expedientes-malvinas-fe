@@ -7,6 +7,7 @@ import { CircuitoStepPreviewComponent } from './circuito-step-preview.component'
 import { FORM_FIELD_TYPES, formFieldTypeLabel } from '../../core/constants/form-field-types';
 import { ALL_ROLES, roleLabel } from '../../core/constants/role-labels';
 import { ReparticionService, CircuitoService, FormularioService } from '../../core/services/expediente.service';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 import {
   CircuitoAdministrativo,
   FormFieldDef,
@@ -21,7 +22,7 @@ import {
 @Component({
   selector: 'app-circuitos',
   standalone: true,
-  imports: [FormsModule, DragDropModule, CircuitoStepPreviewComponent, TitleCasePipe],
+  imports: [FormsModule, DragDropModule, CircuitoStepPreviewComponent, TitleCasePipe, LoadingSpinnerComponent],
   templateUrl: './circuitos.component.html',
   styleUrl: './circuitos.component.scss',
 })
@@ -31,6 +32,7 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   private readonly formularioService = inject(FormularioService);
   private readonly layoutState = inject(LayoutStateService);
 
+  loading = true;
   circuitos: CircuitoAdministrativo[] = [];
   reparticiones: Reparticion[] = [];
   editing: CircuitoAdministrativo | null = null;
@@ -68,7 +70,12 @@ export class CircuitosComponent implements OnInit, OnDestroy {
     if (this.filterModalidad) {
       result = result.filter((c) => c.modalidad === this.filterModalidad);
     }
-    return result;
+    const modalidadOrder: Record<string, number> = { LIBRE: 0, ORIENTATIVA: 1, RESTRICTIVA: 2 };
+    return result.sort((a, b) => {
+      const oa = modalidadOrder[a.modalidad] ?? 99;
+      const ob = modalidadOrder[b.modalidad] ?? 99;
+      return oa - ob || a.nombre.localeCompare(b.nombre, 'es');
+    });
   }
 
   @HostBinding('class.circuitos--editing')
@@ -93,7 +100,11 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    this.circuitoService.listarTodos().subscribe((c) => (this.circuitos = c));
+    this.loading = true;
+    this.circuitoService.listarTodos().subscribe((c) => {
+      this.circuitos = c;
+      this.loading = false;
+    });
   }
 
   nuevo(): void {

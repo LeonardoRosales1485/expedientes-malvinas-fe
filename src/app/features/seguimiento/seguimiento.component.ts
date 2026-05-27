@@ -7,6 +7,7 @@ import { Expediente } from '../../core/models';
 import { SeguimientoDetailPanelComponent } from './seguimiento-detail-panel.component';
 import { SeguimientoExpedienteCardComponent } from './seguimiento-expediente-card.component';
 import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.component';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-seguimiento',
@@ -16,6 +17,7 @@ import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.compo
     SeguimientoDetailPanelComponent,
     SeguimientoPlaceholderComponent,
     FormsModule,
+    LoadingSpinnerComponent,
   ],
   templateUrl: './seguimiento.component.html',
   styleUrl: './seguimiento.component.scss',

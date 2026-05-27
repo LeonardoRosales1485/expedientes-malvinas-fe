@@ -26,7 +26,7 @@
 </div>
 
 @if (loading) {
-  <p>Cargando...</p>
+  <app-loading-spinner message="Cargando feriados..." />
 } @else if (feriados.length === 0) {
   <div class="card empty">No hay feriados cargados para {{ anio }}.</div>
 } @else {

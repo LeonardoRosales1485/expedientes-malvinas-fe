@@ -1,7 +1,7 @@
 <a routerLink="/admin/reparticiones" class="back">‹ Volver a reparticiones</a>
 
 @if (!detalle) {
-  <p>Cargando...</p>
+  <app-loading-spinner message="Cargando detalle..." />
 } @else {
   <div class="detail-topbar">
     <h1 class="page-title">{{ detalle.reparticion.sigla }} — {{ detalle.reparticion.nombre }}</h1>

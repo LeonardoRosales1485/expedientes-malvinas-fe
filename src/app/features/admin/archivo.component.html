@@ -14,6 +14,10 @@
   <span class="filter-count">{{ filtered.length }} expedientes</span>
 </div>
 
+@if (loading) {
+  <app-loading-spinner message="Cargando archivo..." />
+}
+
 <div class="card table-wrap">
   <table class="arch-table">
     <thead>

@@ -16,6 +16,10 @@
   </div>
 </div>
 
+@if (loading) {
+  <app-loading-spinner message="Cargando auditoría..." />
+}
+
 <div class="card table-wrap">
   <table class="audit-table">
     <thead>
