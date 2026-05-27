@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CircuitoService, ExpedienteService } from '../../core/services/expediente.service';
-import { CircuitoAdministrativo } from '../../core/models';
+import { CircuitoAdministrativo, ModalidadCircuito } from '../../core/models';
 
 @Component({
   selector: 'app-crear-expediente',
@@ -26,8 +26,28 @@ export class CrearExpedienteComponent implements OnInit {
     iniciadorDocumento: [''],
   });
 
+  get selectedCircuito(): CircuitoAdministrativo | null {
+    const id = this.form.get('circuitoAdministrativoId')?.value;
+    return this.circuitos.find((c) => c.id === id) ?? null;
+  }
+
   ngOnInit(): void {
     this.circuitoService.listar().subscribe((c) => (this.circuitos = c));
+  }
+
+  onCircuitoChange(): void {}
+
+  modalidadIcon(m: ModalidadCircuito): string {
+    return { RESTRICTIVA: '🔒', ORIENTATIVA: '💡', LIBRE: '📂' }[m] ?? '';
+  }
+
+  termSteps(modalidad: ModalidadCircuito): string {
+    return modalidad === 'RESTRICTIVA' ? 'paso' : 'documento';
+  }
+
+  stepsLabel(modalidad: ModalidadCircuito, count: number): string {
+    const t = this.termSteps(modalidad);
+    return `${count} ${t}${count !== 1 ? 's' : ''}`;
   }
 
   submit(): void {

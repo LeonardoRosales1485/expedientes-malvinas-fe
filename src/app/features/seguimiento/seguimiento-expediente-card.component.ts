@@ -14,6 +14,22 @@ export class SeguimientoExpedienteCardComponent {
   @Input() selected = false;
   @Output() selectExpediente = new EventEmitter<void>();
 
+  get circuitoTipo(): string | null {
+    const m = this.expediente.circuitoModalidad;
+    if (m === 'RESTRICTIVA') return 'Restrictivo';
+    if (m === 'ORIENTATIVA') return 'Orientativo';
+    if (m === 'LIBRE') return 'Libre';
+    return null;
+  }
+
+  get circuitoTipoClass(): string {
+    const m = this.expediente.circuitoModalidad;
+    if (m === 'RESTRICTIVA') return 'restrictiva';
+    if (m === 'ORIENTATIVA') return 'orientativa';
+    if (m === 'LIBRE') return 'libre';
+    return '';
+  }
+
   onSelect(): void {
     this.selectExpediente.emit();
   }

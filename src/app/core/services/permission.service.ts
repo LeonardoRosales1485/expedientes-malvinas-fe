@@ -14,13 +14,17 @@ export class PermissionService {
     return this.auth.isAdmin();
   }
 
+  isCaratulador(): boolean {
+    return this.hasRole('CARATULADOR');
+  }
+
   isJefeDeArea(): boolean {
     return this.auth.currentUser()?.esJefeDeArea ?? false;
   }
 
   isViewerOnly(): boolean {
     const roles = this.auth.currentUser()?.roles ?? [];
-    return roles.includes('VIEWER') && !roles.includes('USER') && !roles.includes('ADMIN');
+    return roles.includes('VIEWER') && !roles.includes('USER') && !roles.includes('ADMIN') && !roles.includes('CARATULADOR');
   }
 
   canAccessAdmin(): boolean {
@@ -43,5 +47,15 @@ export class PermissionService {
     if (!step || step.estado !== 'pendiente') return false;
     if (!this.canMutateExpediente()) return false;
     return this.canActOnReparticion(step.reparticionId);
+  }
+
+  canSignStep(step: HistorialStep | null | undefined): boolean {
+    if (!step || step.estado !== 'guardado') return false;
+    if (!this.canMutateExpediente()) return false;
+    if (!this.canActOnReparticion(step.reparticionId)) return false;
+    const userId = this.auth.currentUser()?.userId;
+    if (!userId) return false;
+    const fueElQueGuardo = (step.usuariosResponsables ?? []).includes(userId);
+    return !fueElQueGuardo;
   }
 }

@@ -8,8 +8,8 @@
     <div class="login-form-col">
       <h1 class="login-title">Expediente Digital</h1>
 
-      @if (showDemoLogin && demoUsers.length === 0) {
-        <!-- Servidor no listo: solo mostrar controles de pre-carga -->
+      @if (showDemoLogin && demoUsers.length === 0 && enableServerWarmup) {
+        <!-- Deploy: servidor dormido, mostrar controles de pre-carga -->
         <p class="login-sub">
           @if (checkingServer) { Verificando disponibilidad del servidor… }
           @else if (serverWaking) { Iniciando el servidor, aguardá un momento… }

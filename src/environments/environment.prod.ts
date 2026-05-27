@@ -3,4 +3,5 @@ export const environment = {
   apiUrl: '/api',
   enableDemoLogin: true,
   demoPassword: 'demo123',
+  enableServerWarmup: true,
 };

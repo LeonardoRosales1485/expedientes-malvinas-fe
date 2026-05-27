@@ -1,67 +1,50 @@
 :host {
   display: block;
-  max-width: 560px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 1rem;
 }
 
-.page-title {
-  color: var(--mma-navy);
-  margin: 0 0 0.5rem;
-  font-size: 1.35rem;
-  line-height: 1.2;
-}
+/* ─── Header ─── */
+.page-header { margin-bottom: 1.5rem; }
+.page-title { margin: 0; font-size: 1.35rem; font-weight: 700; color: #1a5276; }
+.page-desc { margin: 0.3rem 0 0; font-size: 0.88rem; color: #6b7280; }
 
-.form-card {
-  padding: 1rem 1.15rem;
-}
+/* ─── Card ─── */
+.form-card { padding: 1.5rem; }
+.form-card form { display: flex; flex-direction: column; gap: 1.25rem; }
 
-.form-card form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
+/* ─── Wizard steps subtle ─── */
+.wiz-steps { display: flex; gap: 0; margin-bottom: 1.5rem; max-width: 320px; }
+.wiz-step { display: flex; align-items: center; gap: 0.45rem; flex: 1; position: relative; }
+.wiz-step::after { content: ''; flex: 1; height: 2px; background: #e5e7eb; margin: 0 0.65rem; }
+.wiz-step:last-child::after { display: none; }
+.wiz-step-num { width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.75rem; font-weight: 700; background: #e5e7eb; color: #9ca3af; flex-shrink: 0; }
+.wiz-step.active .wiz-step-num { background: #1a5276; color: #fff; }
+.wiz-step-label { font-size: 0.82rem; color: #9ca3af; white-space: nowrap; }
+.wiz-step.active .wiz-step-label { color: #1a5276; font-weight: 600; }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
-}
+/* ─── Field groups ─── */
+.field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-.form-card label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: var(--mma-navy);
-}
+/* ─── Circuito info ─── */
+.circuito-info { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.65rem 0.85rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; }
+.circuito-desc { font-size: 0.82rem; color: #6b7280; width: 100%; }
 
-.form-card input,
-.form-card select,
-.form-card textarea {
-  padding: 0.45rem 0.55rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.92rem;
-  font-family: inherit;
-}
+/* ─── Chips ─── */
+.chip { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 4px; background: #e5e7eb; color: #374151; white-space: nowrap; }
+.chip--libre { background: #d1fae5; color: #065f46; }
+.chip--orientativa { background: #fef3c7; color: #92400e; }
+.chip--restrictiva { background: #fee2e2; color: #991b1b; }
 
-.form-card textarea {
-  resize: none;
-  min-height: 2.6rem;
-  line-height: 1.35;
-}
+/* ─── Actions ─── */
+.form-actions { display: flex; justify-content: flex-end; padding-top: 0.5rem; }
+.btn-primary { display: inline-flex; align-items: center; gap: 0.4rem; background: #1a5276; color: #fff; border: none; padding: 0.6rem 1.3rem; border-radius: 6px; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-primary:hover { background: #154360; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.form-actions {
-  margin-top: 0.2rem;
-
-  .btn-primary {
-    padding: 0.55rem 1.15rem;
-    font-size: 0.92rem;
-  }
-}
-
+/* ─── Responsive ─── */
 @media (max-width: 520px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+  .field-row-2 { grid-template-columns: 1fr; }
+  .form-card { padding: 1rem; }
 }

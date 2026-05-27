@@ -13,6 +13,12 @@
             <span class="badge warn">{{ expediente.estadoVencimiento | estadoLabel }}</span>
           </span>
         }
+        @if (circuitoTipo) {
+          <span class="badge-group">
+            <span class="badge-label">Tipo:</span>
+            <span class="badge" [class]="'chip chip--' + circuitoTipoClass">{{ circuitoTipo }}</span>
+          </span>
+        }
       </div>
     </div>
     <a class="btn-primary detail-action" [routerLink]="['/expedientes', expediente.id]">

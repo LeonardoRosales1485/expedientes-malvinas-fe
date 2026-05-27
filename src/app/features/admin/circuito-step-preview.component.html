@@ -1,76 +1,46 @@
 <div class="preview-mockup">
-  @switch (step.tipoAccion) {
-    @case ('FORM') {
-      @if (formFields.length === 0) {
-        <p class="empty-hint">Sin campos definidos</p>
+  @if (requiereFirma) {
+    <div class="firma-badge">✍️ Requiere firma de autoridad</div>
+  }
+  @if (fields.length === 0) {
+    <p class="empty-hint">Sin campos definidos</p>
+  }
+  @for (field of fields; track $index) {
+    <label class="mock-field">
+      <span class="mock-label">
+        {{ field.nombre }}
+        @if (field.requerido) { <span class="req">*</span> }
+        <small class="tipo-hint">{{ formFieldTypeLabel(field.tipo) }}</small>
+      </span>
+      @switch (field.tipo) {
+        @case ('boolean') {
+          <select disabled>
+            <option>—</option>
+            <option>Sí</option>
+            <option>No</option>
+          </select>
+        }
+        @case ('textarea') {
+          <textarea disabled rows="2" placeholder="Texto largo"></textarea>
+        }
+        @case ('date') {
+          <input type="date" disabled />
+        }
+        @case ('number') {
+          <input type="number" disabled placeholder="0" />
+        }
+        @case ('select') {
+          <select disabled>
+            <option>—</option>
+            @for (opt of field.opciones ?? []; track opt) {
+              <option>{{ opt }}</option>
+            }
+          </select>
+        }
+        @default {
+          <input type="text" disabled [attr.maxlength]="textMaxLength" placeholder="Texto corto" />
+        }
       }
-      @for (field of formFields; track $index) {
-        <label class="mock-field">
-          <span class="mock-label">
-            {{ field.nombre }}
-            @if (field.requerido) { <span class="req">*</span> }
-            <small class="tipo-hint">{{ formFieldTypeLabel(field.tipo) }}</small>
-          </span>
-          @switch (field.tipo) {
-            @case ('boolean') {
-              <select disabled>
-                <option>—</option>
-                <option>Sí</option>
-                <option>No</option>
-              </select>
-            }
-            @case ('textarea') {
-              <textarea disabled rows="2" placeholder="Texto largo"></textarea>
-            }
-            @case ('date') {
-              <input type="date" disabled />
-            }
-            @case ('number') {
-              <input type="number" disabled placeholder="0" />
-            }
-            @case ('select') {
-              <select disabled>
-                <option>—</option>
-                @for (opt of field.opciones ?? []; track opt) {
-                  <option>{{ opt }}</option>
-                }
-              </select>
-            }
-            @default {
-              <input type="text" disabled [attr.maxlength]="textMaxLength" placeholder="Texto corto" />
-            }
-          }
-        </label>
-      }
-    }
-    @case ('FILE_UPLOAD') {
-      <div class="upload-zone">
-        <span class="upload-icon">↑</span>
-        <p>Arrastrar o seleccionar archivos</p>
-        <small>Mínimo {{ minArchivos }} archivo(s)</small>
-      </div>
-    }
-    @case ('APPROVAL') {
-      <div class="approval-mock">
-        <span class="badge info">Aprobación requerida</span>
-        <p>{{ aprobacionesNecesarias }} aprobación(es) necesaria(s)</p>
-        <ul class="meta-list">
-          <li><strong>Reparticiones:</strong>
-            @for (id of getReparticionesAprobadoras(); track id; let last = $last) {
-              {{ repNombre(id) }}@if (!last) {, }
-            }
-          </li>
-          @if (getRolesPermitidos().length) {
-            <li><strong>Roles:</strong>
-              @for (r of getRolesPermitidos(); track r; let last = $last) {
-                {{ roleLabel(r) }}@if (!last) {, }
-              }
-            </li>
-          }
-        </ul>
-        <textarea disabled rows="2" placeholder="Comentario (opcional)"></textarea>
-        <button type="button" class="btn-primary mock-btn" disabled>Aprobar ›</button>
-      </div>
-    }
+    </label>
   }
 </div>
