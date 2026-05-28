@@ -119,12 +119,12 @@
                       <span class="hs-check">&#9879;</span>
                     }
                   </span>
-                  @if (!last) {
+                  @if (!last && !esLibre) {
                     <span class="hs-line" [class.done]="h.estado === 'completado'" [class.obs]="h.estado === 'observado'" [class.saved]="h.estado === 'guardado'"></span>
                   }
                 </div>
                 <div class="hs-content">
-                  <span class="hs-label">{{ h.stepOrder + 1 }}. {{ h.nombreStep }}</span>
+                  <span class="hs-label">{{ esLibre ? h.nombreStep : (h.stepOrder + 1) + '. ' + h.nombreStep }}</span>
                   <span class="hs-hint">{{ stepEstadoLabel(h) }} &middot; {{ (h.fechaSalida ?? h.fechaEntrada) | date:'dd/MM/yyyy, HH:mm' }}</span>
                   @if (hasDatosFormulario(h)) {
                     <dl class="form-data-list">

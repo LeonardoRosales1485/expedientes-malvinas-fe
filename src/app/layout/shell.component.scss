@@ -522,6 +522,10 @@
     padding: 1rem 1.25rem;
     box-sizing: border-box;
 
+    :host.shell--circuito-editor & {
+      padding: 0;
+    }
+
     .main-viewport {
       flex: 1;
       min-height: 0;
@@ -530,12 +534,20 @@
       overflow: hidden;
 
       > app-seguimiento,
-      > app-circuitos,
       > app-expediente-detail {
         flex: 1 1 auto;
         min-height: 0;
         max-height: 100%;
         overflow: hidden;
+        display: block;
+      }
+
+      > app-circuitos {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
         display: block;
       }
 

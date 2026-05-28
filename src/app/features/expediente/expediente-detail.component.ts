@@ -82,6 +82,9 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
   get esTerminoDocumento(): boolean {
     return this.circuito?.modalidad === 'ORIENTATIVA' || this.circuito?.modalidad === 'LIBRE';
   }
+  get esLibre(): boolean {
+    return this.circuito?.modalidad === 'LIBRE';
+  }
 
   get displaySteps(): HistorialStep[] {
     if (!this.expediente || !this.circuito) return this.expediente?.historialSteps ?? [];

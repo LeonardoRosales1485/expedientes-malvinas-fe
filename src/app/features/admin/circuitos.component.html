@@ -81,8 +81,12 @@
         <span class="w-step-num">2</span>
         <span class="w-step-label">{{ stepsLabelPlural(editing!.modalidad) }}</span>
       </div>
-      <div class="w-step" [class.active]="wizardStep === 3">
+      <div class="w-step" [class.active]="wizardStep === 3" [class.done]="wizardStep > 3">
         <span class="w-step-num">3</span>
+        <span class="w-step-label">Firmas para cierre</span>
+      </div>
+      <div class="w-step" [class.active]="wizardStep === 4">
+        <span class="w-step-num">4</span>
         <span class="w-step-label">Vista final</span>
       </div>
     </div>
@@ -133,31 +137,6 @@
         }
       </div>
 
-      <div class="form-section">
-        <label class="section-label">Firmas requeridas para cierre</label>
-        <p class="hint">Seleccioná las reparticiones cuyo Director debe firmar electrónicamente para cerrar el expediente.</p>
-        <div class="firma-req-list">
-          @for (fr of editing!.firmasRequeridas; track $index; let fi = $index) {
-            <div class="firma-req-item">
-              <span>{{ repNombre(fr.reparticionId) }}</span>
-              @if (fr.descripcion) {
-                <small>— {{ fr.descripcion }}</small>
-              }
-              <button type="button" class="btn-danger small" (click)="eliminarFirmaRequerida(fi)">✕</button>
-            </div>
-          }
-        </div>
-        <div class="firma-req-add">
-          <select [(ngModel)]="nuevaFirmaReparticionId">
-            <option value="">Seleccionar repartición…</option>
-            @for (r of reparticiones; track r.id) {
-              <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
-            }
-          </select>
-          <input [(ngModel)]="nuevaFirmaDescripcion" placeholder="Descripción (opcional)" />
-          <button type="button" class="btn-secondary small" (click)="agregarFirmaRequerida()" [disabled]="!nuevaFirmaReparticionId">+ Agregar</button>
-        </div>
-      </div>
     </div>
   }
 
@@ -197,8 +176,39 @@
     </div>
   }
 
-  <!-- ── PASO 3: VISTA FINAL ── -->
-  @if (wizardStep === 3 && editing) {
+  <!-- ── PASO 3: FIRMAS REQUERIDAS PARA CIERRE ── -->
+  @if (wizardStep === 3) {
+    <div class="wizard-body wizard-body--centered">
+      <div class="form-section">
+        <label class="section-label">Firmas requeridas para cierre</label>
+        <p class="hint">Seleccioná las reparticiones cuyo Director debe firmar electrónicamente para cerrar el expediente.</p>
+        <div class="firma-req-list">
+          @for (fr of editing!.firmasRequeridas; track $index; let fi = $index) {
+            <div class="firma-req-item">
+              <span>{{ repNombre(fr.reparticionId) }}</span>
+              @if (fr.descripcion) {
+                <small>— {{ fr.descripcion }}</small>
+              }
+              <button type="button" class="btn-danger small" (click)="eliminarFirmaRequerida(fi)">✕</button>
+            </div>
+          }
+        </div>
+        <div class="firma-req-add">
+          <select [(ngModel)]="nuevaFirmaReparticionId">
+            <option value="">Seleccionar repartición…</option>
+            @for (r of reparticiones; track r.id) {
+              <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
+            }
+          </select>
+          <input [(ngModel)]="nuevaFirmaDescripcion" placeholder="Descripción (opcional)" />
+          <button type="button" class="btn-secondary small" (click)="agregarFirmaRequerida()" [disabled]="!nuevaFirmaReparticionId">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── PASO 4: VISTA FINAL ── -->
+  @if (wizardStep === 4 && editing) {
     <div class="wizard-body">
       <div class="preview-header">
         <span class="preview-title">{{ editing.nombre }}</span>
@@ -515,9 +525,11 @@
     @if (wizardStep > 1) {
       <button class="btn-secondary" (click)="wizardVolver()">← Volver</button>
     }
-    @if (wizardStep < 3) {
+    @if (wizardStep < 4) {
       <button class="btn-primary" (click)="wizardSiguiente()">
-        {{ wizardStep === 1 ? 'Siguiente →' : 'Revisar y guardar →' }}
+        @if (wizardStep === 1) { Siguiente → }
+        @else if (wizardStep === 2) { Firmas para cierre → }
+        @else { Revisar y guardar → }
       </button>
     } @else {
       <button class="btn-primary" (click)="confirmarGuardar()">Guardar circuito</button>

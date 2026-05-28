@@ -44,7 +44,7 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   modalidades: ModalidadCircuito[] = ['RESTRICTIVA', 'ORIENTATIVA', 'LIBRE'];
 
   // Wizard
-  wizardStep: 1 | 2 | 3 = 1;
+  wizardStep: 1 | 2 | 3 | 4 = 1;
 
   // Drawer
   drawerOpen = false;
@@ -162,12 +162,15 @@ export class CircuitosComponent implements OnInit, OnDestroy {
       this.wizardStep = 2;
     } else if (this.wizardStep === 2) {
       this.wizardStep = 3;
+    } else if (this.wizardStep === 3) {
+      this.wizardStep = 4;
     }
   }
 
   wizardVolver(): void {
     if (this.wizardStep === 2) { this.wizardStep = 1; }
     else if (this.wizardStep === 3) { this.wizardStep = 2; }
+    else if (this.wizardStep === 4) { this.wizardStep = 3; }
   }
 
   // ── Step list (paso 2) ──────────────────────────────────────────
