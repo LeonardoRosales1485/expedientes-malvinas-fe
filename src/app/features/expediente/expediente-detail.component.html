@@ -107,6 +107,7 @@
                 [class.saved]="h.estado === 'guardado'"
                 [class.current]="(h.estado === 'pendiente' || h.estado === 'guardado') && h.stepOrder === expediente.stepActual"
                 [class.selected]="selectedStep?.stepOrder === h.stepOrder"
+                [class.step-locked]="!canClickStep(h)"
                 (click)="selectStep(h)"
               >
                 <div class="hs-track">
@@ -382,6 +383,20 @@
               }
             }
 
+          </div>
+        } @else if (selectedStep && selectedStep.estado === 'pendiente') {
+          <div class="action-panel card">
+            <app-task-execution
+              [step]="selectedStep"
+              [configuracion]="getStepConfig(selectedStep.stepOrder)"
+              [expedienteId]="expediente.id"
+              [submitting]="completing"
+              [reparticionNombre]="repNombre(selectedStep.reparticionId)"
+              (completed)="onCompletedSelected($event)"
+              (saved)="onSavedSelected($event)"
+              (devolver)="onDevolver($event)"
+              (delegado)="onDelegado($event)"
+            />
           </div>
         } @else if (currentStep && currentStep.estado === 'guardado' && canSignStep()) {
           <!-- Paso activo: modo firma -->

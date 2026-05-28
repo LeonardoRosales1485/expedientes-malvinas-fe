@@ -54,8 +54,10 @@
       }
     </aside>
     <section class="seg-detail-col" aria-label="Detalle del expediente">
-      @if (selected) {
-        <app-seguimiento-detail-panel [expediente]="selected" />
+      @if (selected && esOrientativoLibre) {
+        <app-seguimiento-detail-panel-orientativo [expediente]="selected" />
+      } @else if (selected) {
+        <app-seguimiento-detail-panel-restrictivo [expediente]="selected" />
       } @else {
         <app-seguimiento-placeholder />
       }

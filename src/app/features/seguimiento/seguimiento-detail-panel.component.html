@@ -54,9 +54,95 @@
     </dl>
 
     <h3 class="detail-section-title">
-      Recorrido del circuito
+      @if (esTerminoDocumento) { Actuaciones del circuito } @else { Recorrido del circuito }
       <span class="step-counter">({{ stepsCompletos }} de {{ steps.length }} completos)</span>
     </h3>
-    <app-vertical-stepper [steps]="steps" />
+    <app-vertical-stepper [steps]="steps" (stepClick)="onStepClick($event)" />
+
+    @if (selectedStepOrder !== null && selectedStep; as step) {
+      <div class="step-detail card">
+        <button class="btn-secondary step-detail-back" (click)="clearSelection()">
+          &larr; Volver al resumen
+        </button>
+
+        @if (selectedStepView; as sv) {
+          <div class="step-detail-header">
+            <h4 class="step-detail-title">{{ sv.label }}</h4>
+            <span
+              class="chip"
+              [class.chip--done]="sv.state === 'done'"
+              [class.chip--pending]="sv.state === 'pending'"
+              [class.chip--current]="sv.state === 'current'"
+            >
+              @if (sv.state === 'done') { Completado }
+              @else if (sv.state === 'current') { En curso }
+              @else { Pendiente }
+            </span>
+          </div>
+        }
+
+        <dl class="detail-meta step-detail-meta">
+          @if (step.fechaEntrada) {
+            <div class="meta-row">
+              <dt>Fecha entrada</dt>
+              <dd>{{ step.fechaEntrada }}</dd>
+            </div>
+          }
+          @if (step.fechaSalida) {
+            <div class="meta-row">
+              <dt>Fecha salida</dt>
+              <dd>{{ step.fechaSalida }}</dd>
+            </div>
+          }
+          @if (step.plazoDias) {
+            <div class="meta-row">
+              <dt>Plazo</dt>
+              <dd>{{ step.plazoDias }} día(s)</dd>
+            </div>
+          }
+        </dl>
+
+        @if (selectedStepFormEntries.length > 0) {
+          <div class="step-detail-section">
+            <h5 class="step-detail-subtitle">Datos del formulario</h5>
+            <dl class="detail-meta">
+              @for (entry of selectedStepFormEntries; track entry.key) {
+                <div class="meta-row">
+                  <dt>{{ entry.key }}</dt>
+                  <dd>{{ entry.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        }
+
+        @if (step.observaciones) {
+          <div class="step-detail-section">
+            <h5 class="step-detail-subtitle">Observaciones</h5>
+            <p class="step-detail-obs">{{ step.observaciones }}</p>
+          </div>
+        }
+
+        @if (step.archivosIds && step.archivosIds.length > 0) {
+          <div class="step-detail-section">
+            <h5 class="step-detail-subtitle">Archivos adjuntos</h5>
+            <p class="step-detail-obs">{{ step.archivosIds.length }} archivo(s)</p>
+          </div>
+        }
+
+        @if (step.aprobaciones && step.aprobaciones.length > 0) {
+          <div class="step-detail-section">
+            <h5 class="step-detail-subtitle">Aprobaciones</h5>
+            @for (ap of step.aprobaciones; track $index) {
+              <p class="step-detail-obs">
+                {{ ap.nombreUsuario ?? ap.usuarioId }}
+                @if (ap.comentario) { &mdash; {{ ap.comentario }} }
+                @if (ap.fecha) { <span class="muted">({{ ap.fecha }})</span> }
+              </p>
+            }
+          </div>
+        }
+      </div>
+    }
   </div>
 </article>

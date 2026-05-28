@@ -130,6 +130,10 @@ export class ExpedienteService {
     return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/guardar`, body);
   }
 
+  completarDirecto(id: string, stepOrder: number, body: Record<string, unknown>) {
+    return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/completar-directo`, body);
+  }
+
   firmar(id: string, stepOrder: number, comentario?: string) {
     return this.http.post<Expediente>(`${this.base}/${id}/steps/${stepOrder}/firmar`, { comentario });
   }

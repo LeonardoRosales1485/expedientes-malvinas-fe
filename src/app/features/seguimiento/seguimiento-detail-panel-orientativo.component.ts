@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CircuitoAdministrativo, Expediente, HistorialStep } from '../../core/models';
 import { CircuitoService } from '../../core/services/expediente.service';
 import { VerticalStepperComponent, VerticalStepView } from '../../shared/vertical-stepper/vertical-stepper.component';
@@ -10,50 +10,25 @@ import {
 import { EstadoLabelPipe } from '../../shared/pipes/estado-label.pipe';
 
 @Component({
-  selector: 'app-seguimiento-detail-panel',
+  selector: 'app-seguimiento-detail-panel-orientativo',
   standalone: true,
   imports: [RouterLink, VerticalStepperComponent, EstadoLabelPipe],
-  templateUrl: './seguimiento-detail-panel.component.html',
-  styleUrl: './seguimiento-detail-panel.component.scss',
+  templateUrl: './seguimiento-detail-panel-orientativo.component.html',
+  styleUrl: './seguimiento-detail-panel-orientativo.component.scss',
 })
-export class SeguimientoDetailPanelComponent implements OnInit {
+export class SeguimientoDetailPanelOrientativoComponent implements OnInit {
   private readonly circuitoService = inject(CircuitoService);
-  private readonly router = inject(Router);
 
   @Input({ required: true }) expediente!: Expediente;
 
   circuito: CircuitoAdministrativo | null = null;
 
-  /** Paso seleccionado para ver detalle inline (Issue 2) */
+  /** Paso seleccionado para ver detalle inline */
   selectedStepOrder: number | null = null;
 
-  get esTerminoDocumento(): boolean {
-    return this.circuito?.modalidad === 'ORIENTATIVA' || this.circuito?.modalidad === 'LIBRE';
-  }
-
-  get esLibre(): boolean {
-    return this.circuito?.modalidad === 'LIBRE';
-  }
-
-  /** HistorialStep[] con la lógica según modalidad */
+  /** HistorialStep[] con TODOS los steps del circuito */
   get displaySteps(): HistorialStep[] {
     if (!this.expediente || !this.circuito) return this.expediente?.historialSteps ?? [];
-    const modalidad = this.circuito.modalidad;
-    if (modalidad === 'RESTRICTIVA') {
-      // Mostrar TODOS los steps del circuito, sintetizando entries faltantes
-      return this.circuito.steps.map((s) => {
-        const h = this.expediente!.historialSteps.find((hs) => hs.stepOrder === s.order);
-        if (h) return h;
-        return {
-          stepOrder: s.order,
-          reparticionId: s.reparticionId,
-          nombreStep: s.nombre,
-          tipoAccion: s.tipoAccion,
-          estado: 'pendiente',
-          plazoDias: s.plazoDias,
-        } as HistorialStep;
-      });
-    }
     return this.circuito.steps.map((s) => {
       const h = this.expediente!.historialSteps.find((hs) => hs.stepOrder === s.order);
       if (h) return h;
@@ -68,19 +43,9 @@ export class SeguimientoDetailPanelComponent implements OnInit {
     });
   }
 
-  /** VerticalStepView[] construido a partir de displaySteps + estado disabled */
+  /** VerticalStepView[] — todos clickeables */
   get steps(): VerticalStepView[] {
-    const views = buildSeguimientoStepsFromArray(this.displaySteps, this.expediente.stepActual);
-    const modalidad = this.circuito?.modalidad;
-    if (modalidad === 'RESTRICTIVA') {
-      // solo habilitar el paso actual (siguiente a completar)
-      return views.map((v) => ({
-        ...v,
-        disabled: v.stepOrder !== this.expediente.stepActual,
-      }));
-    }
-    // ORIENTATIVA / LIBRE: todos clickeables
-    return views;
+    return buildSeguimientoStepsFromArray(this.displaySteps, this.expediente.stepActual);
   }
 
   get stepsCompletos(): number {
@@ -142,16 +107,7 @@ export class SeguimientoDetailPanelComponent implements OnInit {
   }
 
   onStepClick(stepOrder: number): void {
-    const modalidad = this.circuito?.modalidad;
-    if (modalidad === 'RESTRICTIVA') {
-      // Solo permitir click en el paso actual
-      if (stepOrder !== this.expediente.stepActual) return;
-      // Navegar al expediente detail
-      this.router.navigate(['/expedientes', this.expediente.id]);
-    } else {
-      // ORIENTATIVA / LIBRE: mostrar contenido inline en el panel
-      this.selectedStepOrder = stepOrder;
-    }
+    this.selectedStepOrder = stepOrder;
   }
 
   clearSelection(): void {

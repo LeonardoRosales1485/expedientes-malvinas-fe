@@ -97,3 +97,21 @@
 .v-step.current .v-hint {
   color: var(--mma-blue-accent);
 }
+
+/* ─── Clickable steps ─── */
+.v-step.clickable {
+  cursor: pointer;
+}
+.v-step.clickable:hover .v-content {
+  background: #f0f4f8;
+  border-radius: 4px;
+}
+.v-step.clickable:hover .v-label {
+  color: var(--mma-blue-accent);
+}
+
+/* ─── Disabled (not-allowed) steps ─── */
+.v-step.not-allowed {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

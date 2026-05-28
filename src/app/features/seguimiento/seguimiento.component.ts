@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { LayoutStateService } from '../../core/services/layout-state.service';
 import { ExpedienteService } from '../../core/services/expediente.service';
 import { Expediente } from '../../core/models';
-import { SeguimientoDetailPanelComponent } from './seguimiento-detail-panel.component';
+import { SeguimientoDetailPanelRestrictivoComponent } from './seguimiento-detail-panel-restrictivo.component';
+import { SeguimientoDetailPanelOrientativoComponent } from './seguimiento-detail-panel-orientativo.component';
 import { SeguimientoExpedienteCardComponent } from './seguimiento-expediente-card.component';
 import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.component';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
@@ -14,7 +15,8 @@ import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-sp
   standalone: true,
   imports: [
     SeguimientoExpedienteCardComponent,
-    SeguimientoDetailPanelComponent,
+    SeguimientoDetailPanelRestrictivoComponent,
+    SeguimientoDetailPanelOrientativoComponent,
     SeguimientoPlaceholderComponent,
     FormsModule,
     LoadingSpinnerComponent,
@@ -87,6 +89,11 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   get selected(): Expediente | null {
     if (!this.selectedId) return null;
     return this.expedientes.find((e) => e.id === this.selectedId) ?? null;
+  }
+
+  get esOrientativoLibre(): boolean {
+    const m = this.selected?.circuitoModalidad;
+    return m === 'ORIENTATIVA' || m === 'LIBRE';
   }
 
   selectExpediente(id: string): void {

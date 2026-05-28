@@ -88,10 +88,6 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
 
   get displaySteps(): HistorialStep[] {
     if (!this.expediente || !this.circuito) return this.expediente?.historialSteps ?? [];
-    const modalidad = this.circuito.modalidad;
-    // RESTRICTIVA: solo muestra los pasos que ya existen en el historial
-    if (modalidad === 'RESTRICTIVA') return this.expediente.historialSteps;
-    // ORIENTATIVA / LIBRE: muestra todos los pasos del circuito
     return this.circuito.steps.map((s) => {
       const h = this.expediente!.historialSteps.find((hs) => hs.stepOrder === s.order);
       if (h) return h;
@@ -100,10 +96,15 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
         reparticionId: s.reparticionId,
         nombreStep: s.nombre,
         tipoAccion: s.tipoAccion,
-        estado: s.order < this.expediente!.stepActual ? 'completado' : 'pendiente',
+        estado: 'pendiente',
         plazoDias: s.plazoDias,
       } as HistorialStep;
     });
+  }
+
+  canClickStep(h: HistorialStep): boolean {
+    if (this.circuito?.modalidad !== 'RESTRICTIVA') return true;
+    return h.stepOrder <= (this.expediente?.stepActual ?? 0);
   }
   forzarPaseReparticion = '';
   forzarPaseComentario = '';
@@ -218,6 +219,35 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  onCompletedSelected(payload: Record<string, unknown>): void {
+    if (!this.expediente || !this.selectedStep || this.completing) return;
+    const body: Record<string, unknown> = {};
+    const formData = payload['formData'] as Record<string, unknown> | undefined;
+    if (formData && Object.keys(formData).length > 0) body['formData'] = formData;
+    if (payload['comentario']) body['comentario'] = payload['comentario'];
+    if (payload['archivosIds']) body['archivosIds'] = payload['archivosIds'];
+    this.actionError = '';
+    this.completing = true;
+    this.expedienteService.completarDirecto(this.expediente.id, this.selectedStep.stepOrder, body).subscribe({
+      next: (exp) => {
+        this.completing = false;
+        this.selectedStep = null;
+        this.expediente = exp;
+        this.reloadCurrentStep(exp);
+        this.load(exp.id);
+      },
+      error: (e) => {
+        this.completing = false;
+        this.actionError = e.error?.detail || e.error?.message || 'No se pudo completar el paso';
+      },
+    });
+  }
+
+  onSavedSelected(payload: Record<string, unknown>): void {
+    // En pasos fuera de flujo (ORIENTATIVA/LIBRE), guardar equivale a completar directamente
+    this.onCompletedSelected(payload);
+  }
+
   onDevolver(obs: string): void {
     if (!this.expediente || !this.currentStep) return;
     this.expedienteService
@@ -318,6 +348,11 @@ export class ExpedienteDetailComponent implements OnInit, OnDestroy {
   }
 
   selectStep(h: HistorialStep): void {
+    if (!this.canClickStep(h)) return;
+    if (h.stepOrder === this.expediente?.stepActual) {
+      this.selectedStep = null;
+      return;
+    }
     this.selectedStep = this.selectedStep?.stepOrder === h.stepOrder ? null : h;
     this.reEditando = false;
     this.reEditMotivo = '';

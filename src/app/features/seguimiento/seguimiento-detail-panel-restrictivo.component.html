@@ -1,0 +1,62 @@
+<article class="detail-panel card">
+  <div class="detail-toolbar">
+    <div class="detail-toolbar-title">
+      <h2 class="detail-num">{{ expediente.numeroExpediente }}</h2>
+      <div class="detail-badges">
+        <span class="badge-group">
+          <span class="badge-label">Estado:</span>
+          <span class="badge info">{{ expediente.estadoActual | estadoLabel }}</span>
+        </span>
+        @if (expediente.estadoVencimiento) {
+          <span class="badge-group">
+            <span class="badge-label">Plazo:</span>
+            <span class="badge warn">{{ expediente.estadoVencimiento | estadoLabel }}</span>
+          </span>
+        }
+        @if (circuitoTipo) {
+          <span class="badge-group">
+            <span class="badge-label">Tipo:</span>
+            <span class="badge" [class]="'chip chip--' + circuitoTipoClass">{{ circuitoTipo }}</span>
+          </span>
+        }
+      </div>
+    </div>
+    <a class="btn-primary detail-action" [routerLink]="['/expedientes', expediente.id]">
+      Ver Expediente entero ›
+    </a>
+  </div>
+
+  <div class="detail-body">
+    <p class="detail-objeto">{{ expediente.caratula.objeto }}</p>
+
+    <dl class="detail-meta">
+      <div class="meta-row">
+        <dt>Tipo de trámite</dt>
+        <dd>{{ expediente.caratula.tipoTramite }}</dd>
+      </div>
+      @if (iniciadorNombre) {
+        <div class="meta-row">
+          <dt>Iniciador</dt>
+          <dd>
+            {{ iniciadorNombre }}
+            @if (iniciadorDocumento) {
+              <span class="muted"> · {{ iniciadorDocumento }}</span>
+            }
+          </dd>
+        </div>
+      }
+      @if (pasoActual) {
+        <div class="meta-row">
+          <dt>Paso actual</dt>
+          <dd>{{ pasoActual }}</dd>
+        </div>
+      }
+    </dl>
+
+    <h3 class="detail-section-title">
+      Recorrido del circuito
+      <span class="step-counter">({{ stepsCompletos }} de {{ steps.length }} completos)</span>
+    </h3>
+    <app-vertical-stepper [steps]="steps" (stepClick)="onStepClick($event)" />
+  </div>
+</article>

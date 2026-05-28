@@ -1,6 +1,14 @@
 <ol class="v-stepper" role="list">
-  @for (step of steps; track $index; let last = $last) {
-    <li class="v-step" [class.done]="step.state === 'done'" [class.current]="step.state === 'current'" [class.pending]="step.state === 'pending'">
+  @for (step of steps; track step.stepOrder ?? $index; let last = $last) {
+    <li
+      class="v-step"
+      [class.done]="step.state === 'done'"
+      [class.current]="step.state === 'current'"
+      [class.pending]="step.state === 'pending'"
+      [class.clickable]="step.stepOrder !== undefined && !step.disabled"
+      [class.not-allowed]="step.disabled === true"
+      (click)="step.stepOrder !== undefined && !step.disabled && stepClick.emit(step.stepOrder)"
+    >
       <div class="v-track">
         <span class="v-dot" aria-hidden="true">
           @if (step.state === 'done') {
