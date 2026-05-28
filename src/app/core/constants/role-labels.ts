@@ -5,11 +5,11 @@ export const ROLE_LABELS: Record<Role, string> = {
   USER: 'Usuario general',
   VIEWER: 'Lector',
   EXTERNO: 'Externo',
-  JEFE_AREA: 'Director',
   CARATULADOR: 'Caratulador',
+  JEFE_AREA: 'Director',
 };
 
-export const ALL_ROLES: Role[] = ['ADMIN', 'USER', 'VIEWER', 'EXTERNO', 'JEFE_AREA', 'CARATULADOR'];
+export const ALL_ROLES: Role[] = ['ADMIN', 'USER', 'VIEWER', 'EXTERNO', 'CARATULADOR', 'JEFE_AREA'];
 
 export function roleLabel(role: Role): string {
   return ROLE_LABELS[role] ?? role;

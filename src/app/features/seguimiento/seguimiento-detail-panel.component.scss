@@ -97,6 +97,17 @@
   }
 }
 
+.chip {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.chip--libre { background: #d1fae5; color: #065f46; }
+.chip--orientativa { background: #fef3c7; color: #92400e; }
+.chip--restrictiva { background: #fee2e2; color: #991b1b; }
+
 .detail-section-title {
   margin: 0 0 0.4rem;
   font-size: 0.82rem;

@@ -3,17 +3,19 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ReparticionService } from '../../core/services/expediente.service';
 import { Reparticion } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-reparticiones',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LoadingSpinnerComponent],
   templateUrl: './reparticiones.component.html',
   styleUrl: './reparticiones.component.scss',
 })
 export class ReparticionesComponent implements OnInit {
   private readonly reparticionService = inject(ReparticionService);
 
+  loading = true;
   reps: Reparticion[] = [];
   editing: Partial<Reparticion> | null = null;
   error = '';
@@ -32,7 +34,11 @@ export class ReparticionesComponent implements OnInit {
   }
 
   load(): void {
-    this.reparticionService.listar().subscribe((r) => (this.reps = r));
+    this.loading = true;
+    this.reparticionService.listar().subscribe((r) => {
+      this.reps = r;
+      this.loading = false;
+    });
   }
 
   nuevo(): void {

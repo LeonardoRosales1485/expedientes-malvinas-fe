@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 interface Feriado {
   id: string;
@@ -12,7 +13,7 @@ interface Feriado {
 @Component({
   selector: 'app-feriados',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, LoadingSpinnerComponent],
   templateUrl: './feriados.component.html',
 })
 export class FeriadosComponent implements OnInit {

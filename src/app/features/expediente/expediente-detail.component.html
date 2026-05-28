@@ -1,5 +1,5 @@
 @if (!expediente) {
-  <p class="loading">Cargando expediente...</p>
+  <app-loading-spinner size="lg" />
 } @else {
   <div class="detail-page">
     <div class="detail-top">
@@ -30,11 +30,11 @@
           <button
             type="button"
             role="tab"
-            [class.active]="activeTab === 'historial'"
-            [attr.aria-selected]="activeTab === 'historial'"
-            (click)="activeTab = 'historial'"
+            [class.active]="activeTab === 'pasos'"
+            [attr.aria-selected]="activeTab === 'pasos'"
+            (click)="activeTab = 'pasos'"
           >
-            Historial
+            @if (esTerminoDocumento) { Actuaciones } @else { Pasos }
           </button>
           <button
             type="button"
@@ -72,25 +72,40 @@
           >
             Diagrama
           </button>
+          <button
+            type="button"
+            role="tab"
+            [class.active]="activeTab === 'notificaciones'"
+            [attr.aria-selected]="activeTab === 'notificaciones'"
+            (click)="activeTab = 'notificaciones'"
+          >
+            Notificaciones
+          </button>
         </div>
       </div>
       <p class="detail-objeto">{{ expediente.caratula.objeto }}</p>
     </div>
 
+    @if (activeTab === 'pasos') {
     <div class="detail-grid">
-      <section class="detail-col-left card doc-panel" [attr.aria-label]="activeTab === 'historial' ? 'Historial de pasos' : activeTab === 'documentos' ? 'Documentos' : 'Carátula'">
-        @if (activeTab === 'historial') {
-          <h2 class="hs-heading">
-            Historial de pasos
+      <section class="detail-col-left card doc-panel" [attr.aria-label]="esTerminoDocumento ? 'Actuaciones' : 'Historial de pasos'">
+            <h2 class="section-label" style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="display:flex;align-items:center;gap:0.75rem;">
+              @if (esTerminoDocumento) { Actuaciones } @else { Historial de pasos }
+              @if (esTerminoDocumento) {
+                <button type="button" class="btn-agregar-actuacion" (click)="actuacionModalOpen = true">+ Agregar actuación</button>
+              }
+            </span>
             <span class="step-counter">({{ pasosCompletados() }} de {{ totalPasosCircuito }} completos)</span>
           </h2>
           <ol class="hs-stepper">
-            @for (h of expediente.historialSteps; track h.stepOrder + h.estado + $index; let last = $last) {
+            @for (h of displaySteps; track h.stepOrder; let last = $last) {
               <li
                 class="hs-step"
                 [class.done]="h.estado === 'completado'"
                 [class.obs]="h.estado === 'observado'"
-                [class.current]="h.estado === 'pendiente' && h.stepOrder === expediente.stepActual"
+                [class.saved]="h.estado === 'guardado'"
+                [class.current]="(h.estado === 'pendiente' || h.estado === 'guardado') && h.stepOrder === expediente.stepActual"
                 [class.selected]="selectedStep?.stepOrder === h.stepOrder"
                 (click)="selectStep(h)"
               >
@@ -100,10 +115,12 @@
                       <span class="hs-check">&#10003;</span>
                     } @else if (h.estado === 'observado') {
                       <span class="hs-check">!</span>
+                    } @else if (h.estado === 'guardado') {
+                      <span class="hs-check">&#9879;</span>
                     }
                   </span>
                   @if (!last) {
-                    <span class="hs-line" [class.done]="h.estado === 'completado'" [class.obs]="h.estado === 'observado'"></span>
+                    <span class="hs-line" [class.done]="h.estado === 'completado'" [class.obs]="h.estado === 'observado'" [class.saved]="h.estado === 'guardado'"></span>
                   }
                 </div>
                 <div class="hs-content">
@@ -147,6 +164,18 @@
                             @if (ap.comentario) { <em>&mdash; {{ ap.comentario }}</em> }
                           </p>
                         }
+                      } @else if (h.firma) {
+                        <p class="firma-line">
+                          &#128221; <strong>{{ primerResponsableNombre(h) }}</strong> guardó
+                          &middot; {{ repNombre(h.reparticionId) }}
+                          @if (h.fechaSalida) { &middot; {{ h.fechaSalida | date:'dd/MM/yyyy HH:mm' }} }
+                        </p>
+                        <p class="firma-line">
+                          &#10003; <strong>{{ h.firma.nombreUsuario }}</strong> firmó
+                          &middot; {{ repNombre(h.reparticionId) }}
+                          &middot; {{ h.firma.fecha | date:'dd/MM/yyyy HH:mm' }}
+                          @if (h.firma.comentario) { <em>&mdash; {{ h.firma.comentario }}</em> }
+                        </p>
                       } @else if (h.fechaSalida) {
                         <p class="firma-line">
                           &#10003; <strong>{{ primerResponsableNombre(h) }}</strong>
@@ -160,115 +189,37 @@
               </li>
             }
           </ol>
-          @if (expediente.notificacionesLog?.length) {
-            <div class="notif-log">
-              <h3 class="notif-log-title">Notificaciones enviadas</h3>
-              <ul>
-                @for (n of expediente.notificacionesLog; track $index) {
-                  <li>
-                    <span class="notif-msg">{{ n.mensaje }}</span>
-                    <span class="notif-meta">{{ repNombre(n.destinatarioReparticionId) }} &middot; {{ n.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
-                  </li>
-                }
-              </ul>
+
+          @if (esTerminoDocumento && (expediente.actuacionesAdhoc?.length ?? 0) > 0) {
+            <div class="adhoc-section">
+              <h3 class="adhoc-title">Actuaciones agregadas</h3>
+              @for (act of expediente.actuacionesAdhoc; track act.id) {
+                <div class="adhoc-card" [class.adhoc-acta]="act.tipo === 'ACTA'" [class.adhoc-hoja]="act.tipo === 'HOJA'">
+                  <div class="adhoc-header">
+                    <span class="adhoc-tipo-badge">{{ act.tipo === 'ACTA' ? '📄 Acta' : '📋 Hoja' }}</span>
+                    <strong class="adhoc-titulo">{{ act.titulo }}</strong>
+                    <span class="adhoc-meta">por {{ act.creadoPorNombre }} &middot; {{ act.creadoEn | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  @if (act.tipo === 'ACTA' && act.contenidoHtml) {
+                    <div class="adhoc-contenido ql-editor" [innerHTML]="act.contenidoHtml"></div>
+                  }
+                  @if (act.tipo === 'HOJA' && act.datosFormulario) {
+                    <dl class="adhoc-datos">
+                      @for (entry of act.datosFormulario | keyvalue; track entry.key) {
+                        <div class="adhoc-dato-row">
+                          <dt>{{ entry.key }}</dt>
+                          <dd>{{ entry.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  }
+                  @if (act.plantillaNombre) {
+                    <p class="adhoc-plantilla">Plantilla: {{ act.plantillaNombre }}</p>
+                  }
+                </div>
+              }
             </div>
           }
-        }
-        @if (activeTab === 'documentos') {
-          <h2>Documentos adjuntos</h2>
-          @if (archivos.length === 0) {
-            <p class="empty">Sin documentos cargados.</p>
-          } @else {
-            <ul class="file-list">
-              @for (f of archivos; track f.id) {
-                <li>
-                  <span>{{ f.nombreOriginal }}</span>
-                  <small>Paso {{ f.stepOrder + 1 }} — {{ f.fechaSubida | date:'short' }}</small>
-                  <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
-                  @if (canDeleteFile(f)) {
-                    <button type="button" class="btn-danger small" (click)="deleteFile(f)">Eliminar</button>
-                  }
-                </li>
-              }
-            </ul>
-          }
-        }
-        @if (activeTab === 'datos') {
-          <h2>Carátula</h2>
-          <dl>
-            <dt>Trámite</dt><dd>{{ expediente.caratula.tipoTramite }}</dd>
-            <dt>Objeto</dt><dd>{{ expediente.caratula.objeto }}</dd>
-            @if (expediente.caratula.iniciador) {
-              <dt>Iniciador</dt><dd>{{ expediente.caratula.iniciador.nombre }}</dd>
-            }
-            <dt>Circuito administrativo</dt><dd>{{ circuito?.nombre }} (v{{ expediente.circuitoVersion }})</dd>
-          </dl>
-        }
-        @if (activeTab === 'actos') {
-          <div class="actos-panel">
-            <h2 class="hs-heading">Actos administrativos</h2>
-
-            @if (perm.canAccessAdmin()) {
-              <div class="actos-generar">
-                <select [(ngModel)]="plantillaSeleccionada">
-                  <option value="">— Seleccionar plantilla —</option>
-                  @for (p of plantillas; track p.id) {
-                    <option [value]="p.id">{{ p.tipoActo }} · {{ p.nombre }}</option>
-                  }
-                </select>
-                <button class="btn-primary" (click)="generarActo()" [disabled]="!plantillaSeleccionada || generandoActo">
-                  {{ generandoActo ? 'Generando...' : 'Generar acto' }}
-                </button>
-              </div>
-            }
-
-            @if (actos.length === 0) {
-              <p class="empty">Sin actos administrativos para este expediente.</p>
-            }
-            @for (acto of actos; track acto.id) {
-              <div class="acto-card card">
-                <div class="acto-header">
-                  <span class="acto-tipo">{{ acto.tipoActo }}</span>
-                  @if (acto.numeroActo) {
-                    <strong class="acto-numero">N° {{ acto.numeroActo }}</strong>
-                  }
-                  <span [class]="'acto-estado estado-' + acto.estado">{{ acto.estado }}</span>
-                </div>
-
-                @if (acto.cadenaFirmas.length > 0) {
-                  <ol class="firma-chain">
-                    @for (slot of acto.cadenaFirmas; track slot.orden) {
-                      <li [class]="'slot-' + slot.estadoFirma">
-                        <span class="slot-cargo">{{ slot.cargoRequerido }}</span>
-                        @if (slot.nombreUsuario) {
-                          <span class="slot-firmante">{{ slot.nombreUsuario }}</span>
-                        }
-                        <span class="slot-estado">{{ slot.estadoFirma }}</span>
-                      </li>
-                    }
-                  </ol>
-                }
-
-                @if (acto.estado === 'BORRADOR') {
-                  <div class="acto-actions">
-                    <button class="btn-primary small" (click)="firmarActo(acto)">Firmar</button>
-                    <button class="btn-danger small" (click)="rechazarActo(acto)">Rechazar</button>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        }
-        @if (activeTab === 'diagrama') {
-          <div class="diagrama-panel">
-            <h2 class="hs-heading">Recorrido del expediente</h2>
-            @if (circuito) {
-              <app-circuito-progress [circuito]="circuito" [expediente]="expediente" />
-            } @else {
-              <p class="empty">Cargando circuito…</p>
-            }
-          </div>
-        }
       </section>
 
       <section class="detail-col-right" aria-label="Acciones del paso actual">
@@ -277,67 +228,204 @@
         }
 
         @if (selectedStep && selectedStep.estado !== 'pendiente') {
-          <!-- Paso pasado seleccionado: modo edición -->
           <div class="action-panel card">
-            @if (canEditStep(selectedStep)) {
-              @if (archivosDelStep(selectedStep.stepOrder).length > 0) {
-                <div class="archivos-subidos">
-                  <p class="archivos-subidos-title">Archivos ya subidos ({{ archivosDelStep(selectedStep.stepOrder).length }})</p>
-                  <ul class="file-list">
-                    @for (f of archivosDelStep(selectedStep.stepOrder); track f.id) {
-                      <li>
-                        <span>{{ f.nombreOriginal }}</span>
-                        <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
-                        <button type="button" class="btn-danger small" (click)="deleteFile(f)">Eliminar</button>
-                      </li>
-                    }
-                  </ul>
-                </div>
-              }
+
+            @if (reEditando) {
+              <!-- Admin: formulario de re-edición -->
+              <div class="reedicion-header">
+                <h3 class="reedicion-title">Re-editar: {{ selectedStep.nombreStep }}</h3>
+                <label class="reedicion-motivo-label">
+                  Motivo de la re-edición
+                  <textarea [(ngModel)]="reEditMotivo" rows="2" placeholder="Describa el motivo…" class="reedicion-motivo"></textarea>
+                </label>
+              </div>
               <app-task-execution
                 [step]="selectedStep"
                 [editMode]="true"
                 [configuracion]="getStepConfig(selectedStep.stepOrder)"
                 [expedienteId]="expediente.id"
                 [reparticionNombre]="repNombre(selectedStep.reparticionId)"
-                (edited)="onEdited($event)"
+                (edited)="onReEditado($event)"
               />
-            } @else {
-              <div class="step-readonly">
-                <h3>{{ selectedStep.nombreStep }}</h3>
-                <p class="tipo">Acción: {{ tipoAccionLabel(selectedStep.tipoAccion) }}</p>
-                <p class="hint">Repartición: {{ repNombre(selectedStep.reparticionId) }}</p>
-                <p class="hint">Estado: {{ selectedStep.estado }}</p>
-                @if (hasDatosFormulario(selectedStep)) {
-                  <dl class="form-data-list">
-                    @for (entry of formEntries(selectedStep.datosFormulario); track entry[0]) {
-                      <div class="form-data-row">
-                        <dt>{{ entry[0] }}</dt>
-                        <dd>{{ entry[1] }}</dd>
-                      </div>
-                    }
-                  </dl>
-                }
-                @if (archivosDelStep(selectedStep.stepOrder).length > 0) {
-                  <ul class="file-list">
-                    @for (f of archivosDelStep(selectedStep.stepOrder); track f.id) {
-                      <li>
-                        <span>{{ f.nombreOriginal }}</span>
-                        <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
-                      </li>
-                    }
-                  </ul>
-                }
+              <button type="button" class="btn-secondary small" style="margin-top:0.5rem" (click)="cancelarReEdicion()">Cancelar</button>
 
-                @if (selectedStep.observaciones) {
-                  <p class="obs">{{ selectedStep.observaciones }}</p>
+            } @else if (selectedStep.pendienteAprobacionRevision) {
+              <!-- Revisión pendiente de aprobación -->
+              <div class="revision-banner">
+                <span class="revision-badge">Revisión pendiente</span>
+                <span class="revision-quien">por <strong>{{ selectedStep.revisionAdminNombre }}</strong> · {{ selectedStep.revisionFecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                @if (selectedStep.revisionMotivo) {
+                  <p class="revision-motivo">"{{ selectedStep.revisionMotivo }}"</p>
                 }
               </div>
+
+              <div class="version-tabs">
+                <button type="button" class="version-tab" [class.active]="revisionTab === 'original'" (click)="revisionTab = 'original'">Versión original</button>
+                <button type="button" class="version-tab" [class.active]="revisionTab === 'revision'" (click)="revisionTab = 'revision'">Revisión del admin</button>
+              </div>
+
+              @if (revisionTab === 'original') {
+                <div class="step-readonly">
+                  @if (formEntries(selectedStep.datosFormularioOriginal).length > 0) {
+                    <dl class="form-data-list">
+                      @for (entry of formEntries(selectedStep.datosFormularioOriginal); track entry[0]) {
+                        <div class="form-data-row"><dt>{{ entry[0] }}</dt><dd>{{ entry[1] }}</dd></div>
+                      }
+                    </dl>
+                  } @else {
+                    <p class="hint">Sin datos de formulario originales.</p>
+                  }
+                  @if (archivosOriginalesDelStep(selectedStep).length > 0) {
+                    <ul class="file-list">
+                      @for (f of archivosOriginalesDelStep(selectedStep); track f.id) {
+                        <li>
+                          <span>{{ f.nombreOriginal }}</span>
+                          <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
+                        </li>
+                      }
+                    </ul>
+                  } @else if ((selectedStep.archivosIdsOriginal?.length ?? 0) > 0) {
+                    <p class="hint">{{ selectedStep.archivosIdsOriginal!.length }} archivo(s) en versión original.</p>
+                  }
+                </div>
+              } @else {
+                <div class="step-readonly">
+                  @if (hasDatosFormulario(selectedStep)) {
+                    <dl class="form-data-list">
+                      @for (entry of formEntries(selectedStep.datosFormulario); track entry[0]) {
+                        <div class="form-data-row"><dt>{{ entry[0] }}</dt><dd>{{ entry[1] }}</dd></div>
+                      }
+                    </dl>
+                  }
+                  @if (archivosDelStep(selectedStep.stepOrder).length > 0) {
+                    <ul class="file-list">
+                      @for (f of archivosDelStep(selectedStep.stepOrder); track f.id) {
+                        <li>
+                          <span>{{ f.nombreOriginal }}</span>
+                          <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+
+              <div class="revision-actions">
+                @if (canAprobarRevision(selectedStep)) {
+                  <button type="button" class="btn-primary" (click)="aprobarRevision()">Aprobar revisión</button>
+                }
+                @if (canReEditarStep(selectedStep)) {
+                  <button type="button" class="btn-secondary small" (click)="iniciarReEdicion()">Re-editar de nuevo</button>
+                }
+              </div>
+
+            } @else {
+              <!-- Vista normal de paso completado -->
+              @if (canEditStep(selectedStep)) {
+                @if (archivosDelStep(selectedStep.stepOrder).length > 0) {
+                  <div class="archivos-subidos">
+                    <p class="archivos-subidos-title">Archivos ya subidos ({{ archivosDelStep(selectedStep.stepOrder).length }})</p>
+                    <ul class="file-list">
+                      @for (f of archivosDelStep(selectedStep.stepOrder); track f.id) {
+                        <li>
+                          <span>{{ f.nombreOriginal }}</span>
+                          <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
+                          <button type="button" class="btn-danger small" (click)="deleteFile(f)">Eliminar</button>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+                <app-task-execution
+                  [step]="selectedStep"
+                  [editMode]="true"
+                  [configuracion]="getStepConfig(selectedStep.stepOrder)"
+                  [expedienteId]="expediente.id"
+                  [reparticionNombre]="repNombre(selectedStep.reparticionId)"
+                  (edited)="onEdited($event)"
+                />
+              } @else {
+                <div class="step-readonly">
+                  <h3>{{ selectedStep.nombreStep }}</h3>
+                  <p class="tipo">Acción: {{ tipoAccionLabel(selectedStep.tipoAccion) }}</p>
+                  <p class="hint">Repartición: {{ repNombre(selectedStep.reparticionId) }}</p>
+                  <p class="hint">Estado: {{ selectedStep.estado }}</p>
+                  @if (hasDatosFormulario(selectedStep)) {
+                    <dl class="form-data-list">
+                      @for (entry of formEntries(selectedStep.datosFormulario); track entry[0]) {
+                        <div class="form-data-row">
+                          <dt>{{ entry[0] }}</dt>
+                          <dd>{{ entry[1] }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  }
+                  @if (archivosDelStep(selectedStep.stepOrder).length > 0) {
+                    <ul class="file-list">
+                      @for (f of archivosDelStep(selectedStep.stepOrder); track f.id) {
+                        <li>
+                          <span>{{ f.nombreOriginal }}</span>
+                          <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                  @if (selectedStep.observaciones) {
+                    <p class="obs">{{ selectedStep.observaciones }}</p>
+                  }
+                </div>
+              }
+              @if (canReEditarStep(selectedStep)) {
+                <div class="reedicion-trigger">
+                  <button type="button" class="btn-danger small" (click)="iniciarReEdicion()">Rechazar y re-editar</button>
+                </div>
+              }
             }
+
+          </div>
+        } @else if (currentStep && currentStep.estado === 'guardado' && canSignStep()) {
+          <!-- Paso activo: modo firma -->
+          <div class="action-panel card">
+            <app-task-execution
+              [step]="currentStep"
+              [configuracion]="stepConfig"
+              [expedienteId]="expediente.id"
+              [submitting]="signing"
+              [reparticionNombre]="repNombre(currentStep.reparticionId)"
+              [signMode]="true"
+              (signed)="onSigned($event)"
+            />
+          </div>
+        } @else if (currentStep && currentStep.estado === 'guardado' && !canSignStep()) {
+          <!-- Paso en guardado: otra persona debe firmar -->
+          <div class="card status-card">
+            <p>Paso <strong>{{ currentStep.nombreStep }}</strong> — datos guardados.</p>
+            <p class="hint">Pendiente de firma por un usuario con rol autorizado de <strong>{{ repNombre(currentStep.reparticionId) }}</strong>.</p>
           </div>
         } @else if (currentStep && canActOnStep()) {
-          <!-- Paso activo: modo completar -->
           <div class="action-panel card">
+            <div class="orientativa-banner">
+              <div class="orientativa-banner-icon">💡</div>
+              <div class="orientativa-banner-body">
+                <strong>Modo orientativo</strong>
+                <p class="orientativa-paso">
+                  📍 Este documento debe completarlo:
+                  <strong>{{ repNombre(currentStep.reparticionId) }}</strong>
+                </p>
+                @if (pasoEsperadoData?.pasoEsperado; as paso) {
+                  <p class="orientativa-paso">
+                    ➡️ Al completar, el siguiente sugerido es:
+                    <strong>Paso {{ paso.order + 1 }} — {{ paso.nombre }}</strong>
+                    en <strong>{{ repNombre(paso.reparticionId) }}</strong>
+                  </p>
+                } @else {
+                  <p class="orientativa-paso">➡️ No hay un paso siguiente definido en el circuito.</p>
+                }
+                <button type="button" class="btn-secondary small" (click)="abrirForzarPase()">
+                  ⇥ Forzar pase a otra área
+                </button>
+              </div>
+            </div>
             <app-task-execution
               [step]="currentStep"
               [configuracion]="stepConfig"
@@ -345,6 +433,7 @@
               [submitting]="completing"
               [reparticionNombre]="repNombre(currentStep.reparticionId)"
               (completed)="onCompleted($event)"
+              (saved)="onSaved($event)"
               (devolver)="onDevolver($event)"
               (delegado)="onDelegado($event)"
             />
@@ -367,7 +456,289 @@
             <p class="hint">Seleccione un paso del historial para editarlo.</p>
           </div>
         }
+
+        @if (canMarcarCompleto()) {
+          <div class="cierre-section">
+            <button
+              type="button"
+              class="btn-complete-large"
+              [disabled]="marcandoCompleto"
+              (click)="marcarCompleto()"
+            >
+              {{ marcandoCompleto ? 'Procesando...' : 'Marcar expediente como completo' }}
+            </button>
+          </div>
+        }
+
+        @if (expediente.estadoActual === 'PENDIENTE_FIRMA') {
+          <div class="cierre-panel card">
+            <h3 class="cierre-title">Firmas requeridas para cierre</h3>
+            <ul class="firmas-list">
+              @for (fReq of (expediente.firmasRequeridas ?? []); track fReq.reparticionId) {
+                @let firma = firmaDeReparticion(fReq.reparticionId);
+                <li class="firma-item" [class.firma-ok]="!!firma">
+                  <span class="firma-rep">{{ repNombre(fReq.reparticionId) }}</span>
+                  @if (firma) {
+                    <span class="firma-status firma-done">
+                      ✓ {{ firma.nombreUsuario }} — {{ firma.fecha | date:'dd/MM/yyyy HH:mm' }}
+                      @if (firma.comentario) { <em>· {{ firma.comentario }}</em> }
+                    </span>
+                  } @else {
+                    <span class="firma-status firma-pending">Pendiente</span>
+                  }
+                </li>
+              }
+            </ul>
+            @if (canFirmarCierre()) {
+              <button type="button" class="btn-primary btn-firmar" (click)="abrirFirmaModal()">
+                Firmar expediente
+              </button>
+            }
+          </div>
+        }
       </section>
+    </div>
+    } @else if (activeTab === 'documentos') {
+    <section class="detail-full card doc-panel" aria-label="Documentos">
+      <h2>Documentos adjuntos</h2>
+      @if (archivos.length === 0) {
+        <p class="empty">Sin documentos cargados.</p>
+      } @else {
+        <ul class="file-list">
+          @for (f of archivos; track f.id) {
+            <li>
+              <span>{{ f.nombreOriginal }}</span>
+              <small>Paso {{ f.stepOrder + 1 }} — {{ f.fechaSubida | date:'short' }}</small>
+              <button type="button" class="btn-secondary small" (click)="download(f)">Descargar</button>
+              @if (canDeleteFile(f)) {
+                <button type="button" class="btn-danger small" (click)="deleteFile(f)">Eliminar</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+    } @else if (activeTab === 'datos') {
+    <section class="detail-full card doc-panel" aria-label="Carátula">
+      <h2>Carátula</h2>
+      <dl>
+        <dt>Trámite</dt><dd>{{ expediente.caratula.tipoTramite }}</dd>
+        <dt>Objeto</dt><dd>{{ expediente.caratula.objeto }}</dd>
+        @if (expediente.caratula.iniciador) {
+          <dt>Iniciador</dt><dd>{{ expediente.caratula.iniciador.nombre }}</dd>
+        }
+        <dt>Circuito administrativo</dt><dd>{{ circuito?.nombre }} (v{{ expediente.circuitoVersion }})</dd>
+      </dl>
+    </section>
+    } @else if (activeTab === 'actos') {
+    <section class="detail-full card" aria-label="Actos administrativos">
+      <div class="actos-panel">
+        <h2 class="hs-heading">Actos administrativos</h2>
+
+        @if (perm.canAccessAdmin()) {
+          <div class="actos-generar">
+            <select [(ngModel)]="plantillaSeleccionada">
+              <option value="">— Seleccionar plantilla —</option>
+              @for (p of plantillas; track p.id) {
+                <option [value]="p.id">{{ p.tipoActo }} · {{ p.nombre }}</option>
+              }
+            </select>
+            <button class="btn-primary" (click)="generarActo()" [disabled]="!plantillaSeleccionada || generandoActo">
+              {{ generandoActo ? 'Generando...' : 'Generar acto' }}
+            </button>
+          </div>
+        }
+
+        @if (actos.length === 0) {
+          <p class="empty">Sin actos administrativos para este expediente.</p>
+        }
+        @for (acto of actos; track acto.id) {
+          <div class="acto-card card">
+            <div class="acto-header">
+              <span class="acto-tipo">{{ acto.tipoActo }}</span>
+              @if (acto.numeroActo) {
+                <strong class="acto-numero">N° {{ acto.numeroActo }}</strong>
+              }
+              <span [class]="'acto-estado estado-' + acto.estado">{{ acto.estado }}</span>
+            </div>
+
+            @if (acto.cadenaFirmas.length > 0) {
+              <ol class="firma-chain">
+                @for (slot of acto.cadenaFirmas; track slot.orden) {
+                  <li [class]="'slot-' + slot.estadoFirma">
+                    <span class="slot-cargo">{{ slot.cargoRequerido }}</span>
+                    @if (slot.nombreUsuario) {
+                      <span class="slot-firmante">{{ slot.nombreUsuario }}</span>
+                    }
+                    <span class="slot-estado">{{ slot.estadoFirma }}</span>
+                  </li>
+                }
+              </ol>
+            }
+
+            @if (acto.estado === 'BORRADOR') {
+              <div class="acto-actions">
+                <button class="btn-primary small" (click)="firmarActo(acto)">Firmar</button>
+                <button class="btn-danger small" (click)="rechazarActo(acto)">Rechazar</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+    } @else if (activeTab === 'diagrama') {
+    <section class="detail-full card doc-panel" aria-label="Diagrama del circuito">
+      <div class="diagrama-panel">
+        <h2 class="hs-heading">Recorrido del expediente</h2>
+        @if (circuito) {
+          <app-circuito-progress [circuito]="circuito" [expediente]="expediente" />
+        } @else {
+          <p class="empty">Cargando circuito…</p>
+        }
+      </div>
+    </section>
+    } @else if (activeTab === 'notificaciones') {
+    <section class="detail-full card doc-panel" aria-label="Notificaciones">
+      <h2 class="hs-heading">Notificaciones</h2>
+      <!-- Notificaciones enviadas (log del expediente) -->
+      @if (expediente.notificacionesLog?.length) {
+        <div class="notif-log">
+          <h3 class="notif-log-title">Avisos enviados a reparticiones</h3>
+          <ul>
+            @for (n of expediente.notificacionesLog; track $index) {
+              <li>
+                <span class="notif-msg">{{ n.mensaje }}</span>
+                <span class="notif-meta">{{ repNombre(n.destinatarioReparticionId) }} &middot; {{ n.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+      <!-- Actividad en el expediente -->
+      <div class="notif-log">
+        <h3 class="notif-log-title">@if (esTerminoDocumento) { Actividad en el expediente } @else { Actividad de pasos }</h3>
+        <ol class="hs-stepper">
+          @for (h of expediente.historialSteps; track h.stepOrder + h.estado + $index; let last = $last) {
+            <li class="hs-step" [class.done]="h.estado === 'completado'" [class.obs]="h.estado === 'observado'">
+              <div class="hs-track">
+                <span class="hs-dot">
+                  @if (h.estado === 'completado') { <span class="hs-check">&#10003;</span> }
+                  @else if (h.estado === 'observado') { <span class="hs-check">!</span> }
+                </span>
+                @if (!last) { <span class="hs-line" [class.done]="h.estado === 'completado'" [class.obs]="h.estado === 'observado'"></span> }
+              </div>
+              <div class="hs-content">
+                <span class="hs-label">{{ h.stepOrder + 1 }}. {{ h.nombreStep }}</span>
+                <span class="hs-hint">{{ stepEstadoLabel(h) }} &middot; {{ (h.fechaSalida ?? h.fechaEntrada) | date:'dd/MM/yyyy, HH:mm' }}</span>
+                @if (h.observaciones) { <p class="obs">{{ h.observaciones }}</p> }
+                @if (h.estado === 'completado' || h.estado === 'observado') {
+                  <div class="firma-digital">
+                    @if (h.tipoAccion === 'APPROVAL' && h.aprobaciones?.length) {
+                      @for (ap of h.aprobaciones; track ap.usuarioId) {
+                        <p class="firma-line">&#10003; <strong>{{ ap.nombreUsuario || ap.usuarioId }}</strong> &middot; {{ repNombre(h.reparticionId) }} &middot; {{ ap.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+                      }
+                    } @else if (h.firma) {
+                      <p class="firma-line">&#128221; <strong>{{ primerResponsableNombre(h) }}</strong> guardó &middot; {{ repNombre(h.reparticionId) }} @if (h.fechaSalida) { &middot; {{ h.fechaSalida | date:'dd/MM/yyyy HH:mm' }} }</p>
+                      <p class="firma-line">&#10003; <strong>{{ h.firma.nombreUsuario }}</strong> firmó &middot; {{ repNombre(h.reparticionId) }} &middot; {{ h.firma.fecha | date:'dd/MM/yyyy HH:mm' }} @if (h.firma.comentario) { <em>&mdash; {{ h.firma.comentario }}</em> }</p>
+                    } @else if (h.fechaSalida) {
+                      <p class="firma-line">&#10003; <strong>{{ primerResponsableNombre(h) }}</strong> &middot; {{ repNombre(h.reparticionId) }} &middot; {{ h.fechaSalida | date:'dd/MM/yyyy HH:mm' }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      </div>
+      @if (!expediente.notificacionesLog?.length && expediente.historialSteps.length === 0) {
+        <p class="empty">Sin notificaciones ni actividad registrada.</p>
+      }
+    </section>
+    }
+  </div>
+}
+
+@if (actuacionModalOpen && expediente) {
+  <app-agregar-actuacion-modal
+    [expedienteId]="expediente.id"
+    [actuacionesExistentes]="expediente.actuacionesAdhoc ?? []"
+    (guardado)="onActuacionGuardada($event)"
+    (cerrado)="actuacionModalOpen = false"
+  />
+}
+
+<!-- ═══════════════ FIRMA DE CIERRE MODAL ═══════════════ -->
+@if (firmaModalOpen && expediente) {
+  <div class="modal-overlay" (click)="cerrarFirmaModal()"></div>
+  <div class="modal modal--sm">
+    <div class="modal-header">
+      <h2>Firma de expediente</h2>
+      <button type="button" class="btn-icon" (click)="cerrarFirmaModal()">×</button>
+    </div>
+    <div class="modal-body">
+      @if (actionError) {
+        <p class="action-error">{{ actionError }}</p>
+      }
+      <div class="firma-preview">
+        <div class="firma-preview-row">
+          <span class="firma-preview-label">Firmante</span>
+          <strong>{{ auth.currentUser()?.nombre }} {{ auth.currentUser()?.apellido }}</strong>
+        </div>
+        <div class="firma-preview-row">
+          <span class="firma-preview-label">Fecha</span>
+          <strong>{{ today | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </div>
+        <div class="firma-preview-row">
+          <span class="firma-preview-label">Expediente</span>
+          <strong>{{ expediente.numeroExpediente }}</strong>
+        </div>
+      </div>
+      <label class="form-field">
+        <span class="form-field-label">Comentario (opcional)</span>
+        <textarea [(ngModel)]="firmaComentario" rows="3" placeholder="Comentario para el registro de firma…"></textarea>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cerrarFirmaModal()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="confirmarFirma()" [disabled]="firmando">
+        {{ firmando ? 'Firmando...' : 'Confirmar firma' }}
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════ FORZAR PASE MODAL ═══════════════ -->
+@if (forzarPaseOpen) {
+  <div class="modal-overlay" (click)="cerrarForzarPase()"></div>
+  <div class="modal modal--sm">
+    <div class="modal-header">
+      <h2>⇥ Forzar pase</h2>
+      <button type="button" class="btn-icon" (click)="cerrarForzarPase()">×</button>
+    </div>
+    <div class="modal-body">
+      @if (actionError) {
+        <p class="action-error">{{ actionError }}</p>
+      }
+      <p class="hint">Enviar el expediente a una repartición distinta a la recomendada. Esta acción queda registrada en auditoría.</p>
+      <label class="form-field">
+        <span class="form-field-label">Repartición destino</span>
+        <select [(ngModel)]="forzarPaseReparticion">
+          <option value="">— Seleccionar —</option>
+          @for (r of reparticiones; track r.id) {
+            <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-field">
+        <span class="form-field-label">Comentario (opcional)</span>
+        <textarea [(ngModel)]="forzarPaseComentario" rows="3" placeholder="Motivo del pase forzado…"></textarea>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cerrarForzarPase()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="confirmarForzarPase()" [disabled]="!forzarPaseReparticion">
+        Forzar pase
+      </button>
     </div>
   </div>
 }

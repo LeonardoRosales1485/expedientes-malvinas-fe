@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LayoutStateService } from '../../core/services/layout-state.service';
 import { ExpedienteService } from '../../core/services/expediente.service';
@@ -7,7 +7,7 @@ import { Expediente } from '../../core/models';
 import { SeguimientoDetailPanelComponent } from './seguimiento-detail-panel.component';
 import { SeguimientoExpedienteCardComponent } from './seguimiento-expediente-card.component';
 import { SeguimientoPlaceholderComponent } from './seguimiento-placeholder.component';
-import { PaginatorComponent } from '../../shared/paginator/paginator.component';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-seguimiento',
@@ -16,9 +16,8 @@ import { PaginatorComponent } from '../../shared/paginator/paginator.component';
     SeguimientoExpedienteCardComponent,
     SeguimientoDetailPanelComponent,
     SeguimientoPlaceholderComponent,
-    RouterLink,
     FormsModule,
-    PaginatorComponent,
+    LoadingSpinnerComponent,
   ],
   templateUrl: './seguimiento.component.html',
   styleUrl: './seguimiento.component.scss',
@@ -32,20 +31,22 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   selectedId: string | null = null;
   filterReparticionId: string | null = null;
   searchText = '';
-  page = 0;
-  totalPages = 1;
-  totalElements = 0;
-  readonly pageSize = 20;
+  filterEstado = '';
+  filterTipo = '';
   loading = false;
 
   get filteredExpedientes(): Expediente[] {
     const q = this.searchText.toLowerCase().trim();
-    if (!q) return this.expedientes;
-    return this.expedientes.filter((e) =>
-      e.numeroExpediente?.toLowerCase().includes(q) ||
-      e.caratula.tipoTramite?.toLowerCase().includes(q) ||
-      e.caratula.objeto?.toLowerCase().includes(q),
-    );
+    return this.expedientes.filter((e) => {
+      if (q && !e.numeroExpediente?.toLowerCase().includes(q) &&
+          !e.caratula.tipoTramite?.toLowerCase().includes(q) &&
+          !e.caratula.objeto?.toLowerCase().includes(q)) {
+        return false;
+      }
+      if (this.filterEstado && e.estadoActual !== this.filterEstado) return false;
+      if (this.filterTipo && e.circuitoModalidad !== this.filterTipo) return false;
+      return true;
+    });
   }
 
   ngOnInit(): void {
@@ -60,28 +61,20 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
-    this.expedienteService.listarPaginado(this.page, this.pageSize).subscribe({
-      next: (data: any) => {
-        const all: Expediente[] = Array.isArray(data) ? data : (data.content ?? []);
-        this.totalPages = Array.isArray(data) ? 1 : (data.totalPages ?? 1);
-        this.totalElements = Array.isArray(data) ? data.length : (data.totalElements ?? 0);
+    this.expedienteService.listar().subscribe({
+      next: (data) => {
         this.loading = false;
         if (!this.filterReparticionId) {
-          this.expedientes = all;
+          this.expedientes = data;
           return;
         }
         const rid = this.filterReparticionId;
-        this.expedientes = all.filter((exp) =>
+        this.expedientes = data.filter((exp) =>
           exp.historialSteps?.some((h) => h.reparticionId === rid),
         );
       },
       error: () => (this.loading = false),
     });
-  }
-
-  onPageChange(p: number): void {
-    this.page = p;
-    this.load();
   }
 
   clearFilter(): void {

@@ -47,6 +47,10 @@ export class AuthService {
     return this.currentUser()?.roles?.includes('ADMIN') ?? false;
   }
 
+  isJefeDeArea(): boolean {
+    return this.currentUser()?.esJefeDeArea ?? false;
+  }
+
   /** Actualiza token y datos del usuario desde el servidor (p. ej. tras editar reparticiones). */
   refreshSession() {
     return this.http.get<AuthResponse>(`${environment.apiUrl}/auth/me`).pipe(tap((res) => this.persist(res)));

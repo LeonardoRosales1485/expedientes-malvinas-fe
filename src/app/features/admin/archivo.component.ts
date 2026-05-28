@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Expediente } from '../../core/models';
 import { ExpedienteService } from '../../core/services/expediente.service';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 const ESTADO_LABELS: Record<string, string> = {
   ARCHIVADO_PROVISORIO: 'Archivo provisorio',
@@ -17,13 +18,14 @@ const ESTADO_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-archivo',
   standalone: true,
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink, LoadingSpinnerComponent],
   templateUrl: './archivo.component.html',
   styleUrl: './archivo.component.scss',
 })
 export class ArchivoComponent implements OnInit {
   private readonly expService = inject(ExpedienteService);
 
+  loading = true;
   expedientes: Expediente[] = [];
   filtered: Expediente[] = [];
   filtroEstado = '';
@@ -32,9 +34,11 @@ export class ArchivoComponent implements OnInit {
   estadoKeys = Object.keys(ESTADO_LABELS);
 
   ngOnInit(): void {
+    this.loading = true;
     this.expService.listarArchivados().subscribe((data) => {
       this.expedientes = data;
       this.aplicarFiltro();
+      this.loading = false;
     });
   }
 

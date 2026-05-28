@@ -33,7 +33,7 @@
 </div>
 
 @if (loading) {
-  <p>Cargando...</p>
+  <app-loading-spinner />
 } @else if (filteredTareas().length === 0) {
   <div class="card empty">No hay tareas pendientes.</div>
 } @else {

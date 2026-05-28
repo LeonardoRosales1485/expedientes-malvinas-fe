@@ -6,11 +6,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { CircuitoAdministrativo, Expediente, HistorialStep } from '../../core/models';
 import { EstadoLabelPipe } from '../../shared/pipes/estado-label.pipe';
 import { PaginatorComponent } from '../../shared/paginator/paginator.component';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-bandeja',
   standalone: true,
-  imports: [RouterLink, FormsModule, EstadoLabelPipe, PaginatorComponent],
+  imports: [RouterLink, FormsModule, EstadoLabelPipe, PaginatorComponent, LoadingSpinnerComponent],
   templateUrl: './bandeja.component.html',
   styleUrl: './bandeja.component.scss',
 })

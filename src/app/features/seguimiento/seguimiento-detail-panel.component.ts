@@ -34,4 +34,20 @@ export class SeguimientoDetailPanelComponent {
   get iniciadorDocumento(): string | null {
     return this.expediente.caratula.iniciador?.documento ?? null;
   }
+
+  get circuitoTipo(): string | null {
+    const m = this.expediente.circuitoModalidad;
+    if (m === 'RESTRICTIVA') return 'Restrictivo';
+    if (m === 'ORIENTATIVA') return 'Orientativo';
+    if (m === 'LIBRE') return 'Libre';
+    return null;
+  }
+
+  get circuitoTipoClass(): string {
+    const m = this.expediente.circuitoModalidad;
+    if (m === 'RESTRICTIVA') return 'restrictiva';
+    if (m === 'ORIENTATIVA') return 'orientativa';
+    if (m === 'LIBRE') return 'libre';
+    return '';
+  }
 }

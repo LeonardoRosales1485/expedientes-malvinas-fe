@@ -4,11 +4,12 @@ import { ALL_ROLES, roleLabel } from '../../core/constants/role-labels';
 import { AuthService } from '../../core/services/auth.service';
 import { DomicilioElectronico, ReparticionService, UserAdmin, UserAdminService, UserForm } from '../../core/services/expediente.service';
 import { Reparticion, Role } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, LoadingSpinnerComponent],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
 })
@@ -17,6 +18,7 @@ export class UsersComponent implements OnInit {
   private readonly reparticionService = inject(ReparticionService);
   private readonly auth = inject(AuthService);
 
+  loading = true;
   users: UserAdmin[] = [];
   reparticiones: Reparticion[] = [];
   editing: UserForm & { id?: string; esJefeDeArea?: boolean; domicilioElectronico?: DomicilioElectronico } | null = null;
@@ -43,7 +45,11 @@ export class UsersComponent implements OnInit {
   }
 
   load(): void {
-    this.userService.listar().subscribe((u) => (this.users = u));
+    this.loading = true;
+    this.userService.listar().subscribe((u) => {
+      this.users = u;
+      this.loading = false;
+    });
   }
 
   nuevo(): void {

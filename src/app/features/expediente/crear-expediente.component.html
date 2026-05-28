@@ -1,31 +1,70 @@
-<h1 class="page-title">Iniciar trámite</h1>
-<div class="card form-card">
+<div class="page-header">
+  <h1 class="page-title">Iniciar trámite</h1>
+  <p class="page-desc">Completá los datos para dar de alta un nuevo expediente digital.</p>
+</div>
+
+<div class="form-card card">
+  <div class="wiz-steps">
+    <div class="wiz-step active">
+      <span class="wiz-step-num">1</span>
+      <span class="wiz-step-label">Datos del trámite</span>
+    </div>
+    <div class="wiz-step">
+      <span class="wiz-step-num">2</span>
+      <span class="wiz-step-label">Seguimiento</span>
+    </div>
+  </div>
+
+  @if (loading) {
+    <app-loading-spinner />
+  }
+
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <label class="field-full">
-      Circuito administrativo
-      <select formControlName="circuitoAdministrativoId">
-        <option value="">Seleccione...</option>
+    <label class="form-field">
+      <span class="form-field-label">Tipo de expediente</span>
+      <select formControlName="circuitoAdministrativoId" (change)="onCircuitoChange()">
+        <option value="">Seleccioná un tipo de expediente…</option>
         @for (c of circuitos; track c.id) {
           <option [value]="c.id">{{ c.nombre }}</option>
         }
       </select>
     </label>
-    <label class="field-full">
-      Objeto del expediente
-      <textarea formControlName="objeto" rows="2"></textarea>
+
+    @if (selectedCircuito) {
+      <div class="circuito-info">
+        <span class="chip"
+              [class.chip--libre]="selectedCircuito.modalidad === 'LIBRE'"
+              [class.chip--orientativa]="selectedCircuito.modalidad === 'ORIENTATIVA'"
+              [class.chip--restrictiva]="selectedCircuito.modalidad === 'RESTRICTIVA'">
+          {{ modalidadIcon(selectedCircuito.modalidad) }} {{ selectedCircuito.modalidad }}
+        </span>
+        <span class="chip">{{ stepsLabel(selectedCircuito.modalidad, selectedCircuito.steps.length) }}</span>
+        @if (selectedCircuito.descripcion) {
+          <span class="circuito-desc">{{ selectedCircuito.descripcion }}</span>
+        }
+      </div>
+    }
+
+    <label class="form-field">
+      <span class="form-field-label">Objeto del expediente</span>
+      <textarea formControlName="objeto" rows="3" placeholder="Describí brevemente el motivo del trámite"></textarea>
     </label>
-    <div class="form-row">
-      <label>
-        Nombre del iniciador
-        <input formControlName="iniciadorNombre" />
+
+    <div class="field-row-2">
+      <label class="form-field">
+        <span class="form-field-label">Nombre del iniciador</span>
+        <input formControlName="iniciadorNombre" placeholder="Nombre y apellido" />
       </label>
-      <label>
-        Documento (opcional)
-        <input formControlName="iniciadorDocumento" />
+      <label class="form-field">
+        <span class="form-field-label">Documento <small>(opcional)</small></span>
+        <input formControlName="iniciadorDocumento" placeholder="DNI / CUIT" />
       </label>
     </div>
+
     <div class="form-actions">
-      <button type="submit" class="btn-primary" [disabled]="form.invalid">Iniciar expediente ›</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        Iniciar expediente →
+      </button>
     </div>
   </form>
 </div>

@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReparticionService, UserAdminService } from '../../core/services/expediente.service';
 import { Reparticion, ReparticionDetalle } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-reparticion-detail',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LoadingSpinnerComponent],
   templateUrl: './reparticion-detail.component.html',
   styleUrl: './reparticion-detail.component.scss',
 })

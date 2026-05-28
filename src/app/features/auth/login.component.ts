@@ -22,11 +22,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
   demoUsers: DemoUser[] = [];
   readonly showDemoLogin = environment.enableDemoLogin;
+  readonly enableServerWarmup = environment.enableServerWarmup;
   readonly environment = environment;
 
-  /** true durante los primeros 2s mientras se espera respuesta del servidor */
+  /** true mientras se espera respuesta del servidor */
   checkingServer = true;
-  /** true mientras corre el contador de 95s de warm-up */
+  /** true mientras corre el contador de 95s de warm-up (solo deploy) */
   serverWaking = false;
   wakeCountdown = 95;
   private wakeInterval: ReturnType<typeof setInterval> | null = null;
@@ -43,7 +44,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         next: (users) => {
           this.demoUsers = users;
           this.checkingServer = false;
-          // Si el servidor respondió mientras corría el warm-up, cancelarlo
           if (this.serverWaking) {
             this.stopWaking();
           }
@@ -54,8 +54,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
       });
 
-      // Desbloquear la UI después de 2s independientemente de si la API respondió
-      this.checkTimeout = setTimeout(() => (this.checkingServer = false), 2000);
+      // En local, mostrar el login directamente; en deploy se queda en checkingServer
+      // hasta que el timeout libere la UI para mostrar el botón de pre-inicio
+      if (!this.enableServerWarmup) {
+        this.checkingServer = false;
+      } else {
+        this.checkTimeout = setTimeout(() => (this.checkingServer = false), 2000);
+      }
     } else {
       this.checkingServer = false;
     }

@@ -8,42 +8,57 @@
   </div>
 }
 
-@if (loading) {
-  <p>Cargando...</p>
-} @else if (expedientes.length === 0) {
-  <p class="empty">No hay expedientes para mostrar.</p>
-} @else {
-  <div class="filters card">
-    <label>
-      Buscar en esta página
-      <input type="search" [(ngModel)]="searchText" placeholder="N° expediente, tipo de trámite u objeto…" />
-    </label>
-  </div>
+<div class="filters card">
+  <label class="filter-search">
+    Buscar en esta página
+    <input type="search" [(ngModel)]="searchText" placeholder="N° expediente, tipo de trámite u objeto…" />
+  </label>
+  <label class="filter-select">
+    Estado
+    <select [(ngModel)]="filterEstado">
+      <option value="">Todos</option>
+      <option value="PENDIENTE_CARATULA">Pendiente carátula</option>
+      <option value="PRESENTADO">Presentado</option>
+      <option value="EN_ANALISIS_TECNICO">En análisis técnico</option>
+      <option value="PENDIENTE_FIRMA">Pendiente firma</option>
+      <option value="REGISTRADO">Registrado</option>
+      <option value="OBSERVADO">Observado</option>
+      <option value="CERRADO">Cerrado</option>
+    </select>
+  </label>
+  <label class="filter-select">
+    Tipo
+    <select [(ngModel)]="filterTipo">
+      <option value="">Todos</option>
+      <option value="RESTRICTIVA">Restrictivo</option>
+      <option value="ORIENTATIVA">Orientativo</option>
+      <option value="LIBRE">Libre</option>
+    </select>
+  </label>
+</div>
 
-  @if (filteredExpedientes.length === 0) {
-    <p class="empty">Sin resultados para "{{ searchText }}".</p>
-  } @else {
-    <div class="seg-layout">
-      <aside class="seg-list-col" aria-label="Lista de expedientes">
+@if (loading) {
+  <app-loading-spinner />
+} @else {
+  <div class="seg-layout">
+    <aside class="seg-list-col" aria-label="Lista de expedientes">
+      @if (filteredExpedientes.length === 0) {
+        <p class="empty">Sin resultados para "{{ searchText }}".</p>
+      } @else {
         @for (exp of filteredExpedientes; track exp.id) {
           <app-seguimiento-expediente-card
             [expediente]="exp"
             [selected]="isSelected(exp.id)"
             (selectExpediente)="selectExpediente(exp.id)" />
         }
-        <app-paginator
-          [page]="page"
-          [totalPages]="totalPages"
-          [totalElements]="totalElements"
-          (pageChange)="onPageChange($event)" />
-      </aside>
-      <section class="seg-detail-col" aria-label="Detalle del expediente">
-        @if (selected) {
-          <app-seguimiento-detail-panel [expediente]="selected" />
-        } @else {
-          <app-seguimiento-placeholder />
-        }
-      </section>
-    </div>
-  }
+      }
+    </aside>
+    <section class="seg-detail-col" aria-label="Detalle del expediente">
+      @if (selected) {
+        <app-seguimiento-detail-panel [expediente]="selected" />
+      } @else {
+        <app-seguimiento-placeholder />
+      }
+    </section>
+  </div>
 }

@@ -2,12 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CircuitoService, ExpedienteService } from '../../core/services/expediente.service';
-import { CircuitoAdministrativo } from '../../core/models';
+import { CircuitoAdministrativo, ModalidadCircuito } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-crear-expediente',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LoadingSpinnerComponent],
   templateUrl: './crear-expediente.component.html',
   styleUrl: './crear-expediente.component.scss',
 })
@@ -17,6 +18,7 @@ export class CrearExpedienteComponent implements OnInit {
   private readonly expedienteService = inject(ExpedienteService);
   private readonly router = inject(Router);
 
+  loading = true;
   circuitos: CircuitoAdministrativo[] = [];
 
   form = this.fb.nonNullable.group({
@@ -26,8 +28,32 @@ export class CrearExpedienteComponent implements OnInit {
     iniciadorDocumento: [''],
   });
 
+  get selectedCircuito(): CircuitoAdministrativo | null {
+    const id = this.form.get('circuitoAdministrativoId')?.value;
+    return this.circuitos.find((c) => c.id === id) ?? null;
+  }
+
   ngOnInit(): void {
-    this.circuitoService.listar().subscribe((c) => (this.circuitos = c));
+    this.loading = true;
+    this.circuitoService.listar().subscribe((c) => {
+      this.circuitos = c;
+      this.loading = false;
+    });
+  }
+
+  onCircuitoChange(): void {}
+
+  modalidadIcon(m: ModalidadCircuito): string {
+    return { RESTRICTIVA: '🔒', ORIENTATIVA: '💡', LIBRE: '📂' }[m] ?? '';
+  }
+
+  termSteps(modalidad: ModalidadCircuito): string {
+    return modalidad === 'RESTRICTIVA' ? 'paso' : 'documento';
+  }
+
+  stepsLabel(modalidad: ModalidadCircuito, count: number): string {
+    const t = this.termSteps(modalidad);
+    return `${count} ${t}${count !== 1 ? 's' : ''}`;
   }
 
   submit(): void {

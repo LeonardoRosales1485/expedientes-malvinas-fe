@@ -1,66 +1,183 @@
-<h1 class="page-title">Plantillas de actos administrativos</h1>
-<p class="subtitle">Decretos, resoluciones y disposiciones con placeholders automáticos</p>
+<h1 class="page-title">Plantillas</h1>
 
-<button class="btn-primary" (click)="nueva()">+ Nueva plantilla</button>
+<div class="tabs">
+  <button class="tab" [class.active]="activeTab === 'plantillas'" (click)="setTab('plantillas')">Plantillas de acto</button>
+  <button class="tab" [class.active]="activeTab === 'formularios'" (click)="setTab('formularios')">Formularios</button>
+</div>
 
-@if (editing !== null) {
-  <div class="editor-card card">
-    <h2>{{ editing['id'] ? 'Editar plantilla' : 'Nueva plantilla' }}</h2>
-    <label>
-      Nombre
-      <input type="text" [(ngModel)]="editing['nombre']" placeholder="Ej. Decreto de habilitación" />
-    </label>
-    <label>
-      Tipo de acto
-      <select [(ngModel)]="editing['tipoActo']">
-        @for (t of TIPOS; track t) {
-          <option [value]="t">{{ t }}</option>
-        }
-      </select>
-    </label>
-    <label>
-      Cuerpo HTML
-      <p class="hint">Placeholders disponibles:
-        <code>{{ '{{numeroExpediente}}' }}</code>
-        <code>{{ '{{tipoTramite}}' }}</code>
-        <code>{{ '{{objeto}}' }}</code>
-        <code>{{ '{{iniciador}}' }}</code>
-        <code>{{ '{{fechaInicio}}' }}</code>
-      </p>
-      <textarea [(ngModel)]="editing['cuerpoHtml']" rows="12" class="html-editor"></textarea>
-    </label>
-    <div class="editor-actions">
-      <button class="btn-primary" (click)="guardar()" [disabled]="saving">
-        {{ saving ? 'Guardando...' : 'Guardar' }}
-      </button>
-      <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+@if (activeTab === 'plantillas') {
+  <!-- ════════════════════════ PLANTILLAS ════════════════════════ -->
+  <p class="subtitle">Decretos, resoluciones, notas y disposiciones — editor visual</p>
+
+  <button class="btn-primary" (click)="nueva()">+ Nueva plantilla</button>
+
+  @if (editing !== null) {
+    <div class="editor-card card">
+      <h2>{{ editing['id'] ? 'Editar plantilla' : 'Nueva plantilla' }}</h2>
+      <label>
+        Nombre
+        <input type="text" [(ngModel)]="editing['nombre']" placeholder="Ej. Decreto de habilitación" />
+      </label>
+      <label>
+        Descripción
+        <input type="text" [(ngModel)]="editing['descripcion']" placeholder="Breve descripción del uso" />
+      </label>
+      <label>
+        Tipo de acto
+        <select [(ngModel)]="editing['tipoActo']">
+          @for (t of TIPOS; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Variables disponibles
+        <div class="var-buttons">
+          <button type="button" class="var-btn" (click)="insertVariable('numeroExpediente')">{{ '{{numeroExpediente}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('tipoTramite')">{{ '{{tipoTramite}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('objeto')">{{ '{{objeto}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('iniciador')">{{ '{{iniciador}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('fechaInicio')">{{ '{{fechaInicio}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('lugar')">{{ '{{lugar}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('fecha')">{{ '{{fecha}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('destinatario')">{{ '{{destinatario}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('firmante')">{{ '{{firmante}}' }}</button>
+          <button type="button" class="var-btn" (click)="insertVariable('cargo')">{{ '{{cargo}}' }}</button>
+        </div>
+      </label>
+      <label>
+        Cuerpo HTML
+        <div #quillContainer class="quill-editor"></div>
+      </label>
+      <div class="editor-actions">
+        <button class="btn-primary" (click)="guardar()" [disabled]="saving">
+          {{ saving ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      </div>
     </div>
+  }
+
+  <div class="card table-wrap">
+    <table class="pt-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (plantillas.length === 0) {
+          <tr><td colspan="3" class="empty">Sin plantillas. Crea la primera.</td></tr>
+        }
+        @for (p of plantillas; track p.id) {
+          <tr>
+            <td>{{ p.nombre }}</td>
+            <td><span class="tipo-badge">{{ p.tipoActo }}</span></td>
+            <td class="actions">
+              <button class="btn-secondary small" (click)="editar(p)">Editar</button>
+              <button class="btn-danger small" (click)="eliminar(p)">Eliminar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   </div>
 }
 
-<div class="card table-wrap">
-  <table class="pt-table">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Tipo</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (plantillas.length === 0) {
-        <tr><td colspan="3" class="empty">Sin plantillas. Crea la primera.</td></tr>
+@if (activeTab === 'formularios') {
+  <!-- ════════════════════════ FORMULARIOS ════════════════════════ -->
+  <p class="subtitle">Formularios predefinidos para usar en pasos de tipo FORM</p>
+
+  <button class="btn-primary" (click)="nuevaFormulario()">+ Nuevo formulario</button>
+
+  @if (editingForm !== null) {
+    <div class="editor-card card">
+      <h2>{{ editingForm['id'] ? 'Editar formulario' : 'Nuevo formulario' }}</h2>
+
+      <label>
+        Nombre
+        <input type="text" [(ngModel)]="editingForm['nombre']" placeholder="Ej. Formulario de habilitación" />
+      </label>
+      <label>
+        Descripción
+        <input type="text" [(ngModel)]="editingForm['descripcion']" placeholder="Breve descripción" />
+      </label>
+      <label>
+        Repartición
+        <select [(ngModel)]="editingForm['reparticionId']">
+          <option value="">Sin repartición</option>
+          @for (r of reparticiones; track r.id) {
+            <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="section-label">Campos del formulario</label>
+      @for (f of editingForm['campos']; track $index; let fi = $index) {
+        <div class="form-field-row">
+          <input type="text" class="field-name" [value]="f.nombre"
+                 (input)="updateCampo(fi, { nombre: $any($event.target).value })" placeholder="Nombre del campo" />
+          <select class="field-type" [value]="f.tipo"
+                  (change)="updateCampo(fi, { tipo: $any($event.target).value })">
+            @for (ft of formFieldTypes; track ft) {
+              <option [value]="ft">{{ formFieldTypeLabel(ft) }}</option>
+            }
+          </select>
+          <label class="field-req">
+            <input type="checkbox" [checked]="f.requerido"
+                   (change)="updateCampo(fi, { requerido: $any($event.target).checked })" />
+            Req.
+          </label>
+          @if (f.tipo === 'select') {
+            <input type="text" class="field-opts" [value]="opcionesText(fi)"
+                   (input)="setOpcionesText(fi, $any($event.target).value)" placeholder="op1, op2" />
+          }
+          <button class="btn-icon btn-icon--danger small" (click)="removeCampo(fi)" title="Quitar campo">×</button>
+        </div>
       }
-      @for (p of plantillas; track p.id) {
+      <button class="btn-secondary small" (click)="addCampo()">+ Campo</button>
+
+      <div class="editor-actions">
+        <button class="btn-primary" (click)="guardarFormulario()" [disabled]="savingForm">
+          {{ savingForm ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button class="btn-secondary" (click)="cancelarFormulario()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="card table-wrap">
+    <table class="pt-table">
+      <thead>
         <tr>
-          <td>{{ p.nombre }}</td>
-          <td><span class="tipo-badge">{{ p.tipoActo }}</span></td>
-          <td class="actions">
-            <button class="btn-secondary small" (click)="editar(p)">Editar</button>
-            <button class="btn-danger small" (click)="eliminar(p)">Eliminar</button>
-          </td>
+          <th>Nombre</th>
+          <th>Repartición</th>
+          <th>Campos</th>
+          <th></th>
         </tr>
-      }
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        @if (formularios.length === 0) {
+          <tr><td colspan="4" class="empty">Sin formularios. Crea el primero.</td></tr>
+        }
+        @for (f of formularios; track f.id) {
+          <tr>
+            <td>{{ f.nombre }}</td>
+            <td>
+              @if (f.reparticionId) {
+                <span class="rep-badge">{{ repSigla(f.reparticionId) }}</span>
+              }
+            </td>
+            <td>{{ f.campos.length }} campos</td>
+            <td class="actions">
+              <button class="btn-secondary small" (click)="editarFormulario(f)">Editar</button>
+              <button class="btn-danger small" (click)="eliminarFormulario(f)">Eliminar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
