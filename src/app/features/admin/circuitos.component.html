@@ -43,6 +43,21 @@
     <aside class="preview-panel card">
       <h2 class="panel-title">Vista previa</h2>
       <p class="panel-subtitle">{{ editing.nombre || 'Sin nombre' }}</p>
+      @if (editing.firmasRequeridas?.length) {
+        <div class="firma-req-preview">
+          <strong>Firmas requeridas para cierre:</strong>
+          @for (fr of editing.firmasRequeridas; track $index) {
+            <div class="firma-req-chip">
+              <span class="chip chip--restrictiva">Firma</span>
+              <span>{{ repNombre(fr.reparticionId) }}</span>
+              @if (fr.descripcion) {
+                <small>— {{ fr.descripcion }}</small>
+              }
+            </div>
+          }
+        </div>
+      }
+
       <div class="accordion-list">
         @for (step of editing.steps; track step.order) {
           <div class="accordion-item" [class.expanded]="isStepExpanded(step.order)">
@@ -69,6 +84,30 @@
       <label>Nombre <input [(ngModel)]="editing.nombre" /></label>
       <label>Descripción <textarea [(ngModel)]="editing.descripcion" rows="2"></textarea></label>
       <label><input type="checkbox" [(ngModel)]="editing.activo" /> Activo</label>
+
+      <h3>Firmas requeridas para cierre</h3>
+      <p class="hint">Seleccioná las reparticiones cuyo Director debe firmar electrónicamente para cerrar el expediente.</p>
+      <div class="firma-req-list">
+        @for (fr of editing.firmasRequeridas; track $index; let fi = $index) {
+          <div class="firma-req-item">
+            <span>{{ repNombre(fr.reparticionId) }}</span>
+            @if (fr.descripcion) {
+              <small>— {{ fr.descripcion }}</small>
+            }
+            <button type="button" class="btn-danger small" (click)="eliminarFirmaRequerida(fi)">✕</button>
+          </div>
+        }
+      </div>
+      <div class="firma-req-add">
+        <select [(ngModel)]="nuevaFirmaReparticionId">
+          <option value="">Seleccionar repartición…</option>
+          @for (r of reparticiones; track r.id) {
+            <option [value]="r.id">{{ r.sigla }} — {{ r.nombre }}</option>
+          }
+        </select>
+        <input [(ngModel)]="nuevaFirmaDescripcion" placeholder="Descripción (opcional)" />
+        <button type="button" class="btn-secondary small" (click)="agregarFirmaRequerida()" [disabled]="!nuevaFirmaReparticionId">+ Agregar</button>
+      </div>
 
       <h3>Pasos del circuito</h3>
       @for (step of editing.steps; track step.order; let i = $index) {

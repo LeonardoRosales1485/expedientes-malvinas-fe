@@ -7,6 +7,7 @@ import { ALL_ROLES, roleLabel } from '../../core/constants/role-labels';
 import { ReparticionService, CircuitoService } from '../../core/services/expediente.service';
 import {
   CircuitoAdministrativo,
+  FirmaRequeridaConfig,
   FormFieldDef,
   PasoCircuito,
   Reparticion,
@@ -33,6 +34,8 @@ export class CircuitosComponent implements OnInit, OnDestroy {
   error = '';
   expandedSteps = new Set<number>();
   searchText = '';
+  nuevaFirmaReparticionId = '';
+  nuevaFirmaDescripcion = '';
 
   get filteredCircuitos(): CircuitoAdministrativo[] {
     const q = this.searchText.toLowerCase().trim();
@@ -76,9 +79,12 @@ export class CircuitosComponent implements OnInit, OnDestroy {
       version: 1,
       activo: true,
       steps: [this.emptyStep(0)],
+      firmasRequeridas: [],
     };
     this.openEditor();
     this.expandedSteps = new Set([0]);
+    this.nuevaFirmaReparticionId = '';
+    this.nuevaFirmaDescripcion = '';
   }
 
   editar(c: CircuitoAdministrativo): void {
@@ -151,6 +157,7 @@ export class CircuitosComponent implements OnInit, OnDestroy {
       descripcion: this.editing.descripcion,
       activo: this.editing.activo,
       steps: this.editing.steps,
+      firmasRequeridas: this.editing.firmasRequeridas ?? [],
     };
 
     const req = this.editing.id
@@ -264,5 +271,21 @@ export class CircuitosComponent implements OnInit, OnDestroy {
       configuracion: { formFields: [{ nombre: 'dato', tipo: 'text', requerido: true }] },
       siguienteStep: order + 1,
     };
+  }
+
+  agregarFirmaRequerida(): void {
+    if (!this.editing || !this.nuevaFirmaReparticionId) return;
+    const list = this.editing.firmasRequeridas ?? [];
+    list.push({ reparticionId: this.nuevaFirmaReparticionId, descripcion: this.nuevaFirmaDescripcion });
+    this.editing.firmasRequeridas = list;
+    this.nuevaFirmaReparticionId = '';
+    this.nuevaFirmaDescripcion = '';
+  }
+
+  eliminarFirmaRequerida(i: number): void {
+    if (!this.editing) return;
+    const list = [...(this.editing.firmasRequeridas ?? [])];
+    list.splice(i, 1);
+    this.editing.firmasRequeridas = list;
   }
 }

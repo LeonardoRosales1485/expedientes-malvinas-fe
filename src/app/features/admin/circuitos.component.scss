@@ -214,6 +214,82 @@
   border: 1px solid #eee;
   border-radius: 4px;
 }
+.firma-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.firma-req-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.9rem;
+
+  small {
+    color: #6b7280;
+    font-size: 0.8rem;
+  }
+
+  .btn-danger.small {
+    margin-left: auto;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+}
+
+.firma-req-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+
+  select, input {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  button {
+    flex-shrink: 0;
+  }
+}
+
+.firma-req-preview {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.85rem;
+
+  > strong {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.firma-req-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+  font-size: 0.85rem;
+
+  small {
+    color: #6b7280;
+  }
+
+  .chip {
+    flex-shrink: 0;
+  }
+}
+
 h3, h4 { margin: 1rem 0 0.5rem; }
 h4 { font-size: 0.95rem; }
 

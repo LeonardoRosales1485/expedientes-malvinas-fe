@@ -1,5 +1,5 @@
 export type { DemoUser } from './demo-user';
-export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO';
+export type Role = 'ADMIN' | 'USER' | 'VIEWER' | 'EXTERNO' | 'JEFE_AREA' | 'CARATULADOR';
 export type TipoAccion = 'FILE_UPLOAD' | 'FORM' | 'APPROVAL';
 
 export interface AuthResponse {
@@ -67,6 +67,11 @@ export interface PasoCircuito {
   siguienteStep?: number | null;
 }
 
+export interface FirmaRequeridaConfig {
+  reparticionId: string;
+  descripcion?: string;
+}
+
 export interface CircuitoAdministrativo {
   id: string;
   nombre: string;
@@ -75,6 +80,10 @@ export interface CircuitoAdministrativo {
   steps: PasoCircuito[];
   activo: boolean;
   numeroCatalogo?: number;
+  modalidad?: string;
+  generico?: boolean;
+  pasaPorMesaEntrada?: boolean;
+  firmasRequeridas?: FirmaRequeridaConfig[];
 }
 
 export interface NotificacionLog {
