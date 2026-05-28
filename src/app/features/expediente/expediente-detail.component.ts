@@ -23,11 +23,12 @@ import { ActoAdministrativo, ActuacionAdhoc, CircuitoAdministrativo, Expediente,
 import { TaskExecutionComponent } from './task-execution.component';
 import { CircuitoProgressComponent } from '../../shared/circuito-progress/circuito-progress.component';
 import { environment } from '../../../environments/environment';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-expediente-detail',
   standalone: true,
-  imports: [RouterLink, TaskExecutionComponent, DatePipe, KeyValuePipe, FormsModule, EstadoLabelPipe, CircuitoProgressComponent, AgregarActuacionModalComponent],
+  imports: [RouterLink, TaskExecutionComponent, DatePipe, KeyValuePipe, FormsModule, EstadoLabelPipe, CircuitoProgressComponent, AgregarActuacionModalComponent, LoadingSpinnerComponent],
   templateUrl: './expediente-detail.component.html',
   styleUrl: './expediente-detail.component.scss',
 })

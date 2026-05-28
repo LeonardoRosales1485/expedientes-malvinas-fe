@@ -15,6 +15,10 @@
     </div>
   </div>
 
+  @if (loading) {
+    <app-loading-spinner />
+  }
+
   <form [formGroup]="form" (ngSubmit)="submit()">
     <label class="form-field">
       <span class="form-field-label">Tipo de expediente</span>

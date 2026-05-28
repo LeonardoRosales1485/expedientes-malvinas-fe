@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuditoriaService } from '../../core/services/expediente.service';
 import { AuditLogEntry } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-auditoria',
   standalone: true,
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [FormsModule, DatePipe, RouterLink, LoadingSpinnerComponent],
   templateUrl: './auditoria.component.html',
   styleUrl: './auditoria.component.scss',
 })

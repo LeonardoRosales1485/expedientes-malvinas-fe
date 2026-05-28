@@ -3,11 +3,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CircuitoService, ExpedienteService } from '../../core/services/expediente.service';
 import { CircuitoAdministrativo, ModalidadCircuito } from '../../core/models';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-crear-expediente',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LoadingSpinnerComponent],
   templateUrl: './crear-expediente.component.html',
   styleUrl: './crear-expediente.component.scss',
 })
@@ -17,6 +18,7 @@ export class CrearExpedienteComponent implements OnInit {
   private readonly expedienteService = inject(ExpedienteService);
   private readonly router = inject(Router);
 
+  loading = true;
   circuitos: CircuitoAdministrativo[] = [];
 
   form = this.fb.nonNullable.group({
@@ -32,7 +34,11 @@ export class CrearExpedienteComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.circuitoService.listar().subscribe((c) => (this.circuitos = c));
+    this.loading = true;
+    this.circuitoService.listar().subscribe((c) => {
+      this.circuitos = c;
+      this.loading = false;
+    });
   }
 
   onCircuitoChange(): void {}
