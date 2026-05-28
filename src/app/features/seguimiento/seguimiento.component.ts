@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LayoutStateService } from '../../core/services/layout-state.service';
@@ -37,16 +37,18 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
 
   get filteredExpedientes(): Expediente[] {
     const q = this.searchText.toLowerCase().trim();
-    return this.expedientes.filter((e) => {
-      if (q && !e.numeroExpediente?.toLowerCase().includes(q) &&
-          !e.caratula.tipoTramite?.toLowerCase().includes(q) &&
-          !e.caratula.objeto?.toLowerCase().includes(q)) {
-        return false;
-      }
-      if (this.filterEstado && e.estadoActual !== this.filterEstado) return false;
-      if (this.filterTipo && e.circuitoModalidad !== this.filterTipo) return false;
-      return true;
-    });
+    return this.expedientes
+      .filter((e) => {
+        if (q && !e.numeroExpediente?.toLowerCase().includes(q) &&
+            !e.caratula.tipoTramite?.toLowerCase().includes(q) &&
+            !e.caratula.objeto?.toLowerCase().includes(q)) {
+          return false;
+        }
+        if (this.filterEstado && e.estadoActual !== this.filterEstado) return false;
+        if (this.filterTipo && e.circuitoModalidad !== this.filterTipo) return false;
+        return true;
+      })
+      .sort((a, b) => this.fechaReciente(b) - this.fechaReciente(a));
   }
 
   ngOnInit(): void {
@@ -93,5 +95,16 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
 
   isSelected(id: string): boolean {
     return this.selectedId === id;
+  }
+
+  private fechaReciente(exp: Expediente): number {
+    const lastStep = exp.historialSteps?.[exp.historialSteps.length - 1];
+    const fechaStep = lastStep?.fechaSalida ?? lastStep?.fechaEntrada;
+    if (fechaStep) {
+      return new Date(fechaStep).getTime() || 0;
+    }
+    return exp.caratula?.fechaInicio
+      ? new Date(exp.caratula.fechaInicio).getTime() || 0
+      : 0;
   }
 }
